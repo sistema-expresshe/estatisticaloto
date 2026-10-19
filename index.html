@@ -2,18 +2,22 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>LotoExpert - Estatísticas e Gerador</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- Biblioteca jsPDF para exportar em A4 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
+        /* Ajuste do tamanho da bola para caber no celular e no PC */
         .bola {
-            width: 40px; height: 40px;
+            width: 34px; height: 34px; font-size: 0.85rem;
             display: flex; align-items: center; justify-content: center;
             border-radius: 50%; font-weight: bold; cursor: pointer;
             transition: all 0.2s; border: 2px solid #e5e7eb; background: white; color: #374151;
+        }
+        @media (min-width: 768px) {
+            .bola { width: 40px; height: 40px; font-size: 1rem; }
         }
         .bola:hover { border-color: #a855f7; }
         .bola-selecionada { background-color: #9333ea !important; color: white !important; border-color: #9333ea !important; }
@@ -26,11 +30,11 @@
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
-<body class="bg-gray-50 text-gray-800 font-sans h-screen flex overflow-hidden">
+<body class="bg-gray-50 text-gray-800 font-sans h-screen flex flex-col md:flex-row overflow-hidden w-full">
 
     <!-- TELA DE LOGIN -->
-    <div id="login-overlay" class="fixed inset-0 bg-purple-900 z-[9999] flex items-center justify-center">
-        <div class="bg-white p-8 rounded-xl shadow-2xl w-full max-w-md mx-4">
+    <div id="login-overlay" class="fixed inset-0 bg-purple-900 z-[9999] flex items-center justify-center p-4">
+        <div class="bg-white p-6 md:p-8 rounded-xl shadow-2xl w-full max-w-md">
             <h2 class="text-3xl font-bold text-center text-purple-700 mb-6"><i class="fa-solid fa-clover"></i> LotoExpert</h2>
             <div id="login-error" class="hidden bg-red-100 text-red-700 p-3 rounded mb-4 text-sm text-center"></div>
             
@@ -42,153 +46,167 @@
         </div>
     </div>
 
-    <!-- SIDEBAR -->
-    <aside class="w-64 bg-purple-800 text-white flex flex-col h-full shadow-xl z-10">
-        <div class="p-6">
+    <!-- CABEÇALHO MOBILE (Só aparece em telas pequenas) -->
+    <div class="md:hidden bg-purple-800 text-white flex justify-between items-center p-4 shadow-md z-20 w-full">
+        <h1 class="text-xl font-bold flex items-center gap-2"><i class="fa-solid fa-clover text-purple-300"></i> LotoExpert</h1>
+        <button id="btn-menu-mobile" class="text-white text-2xl focus:outline-none"><i class="fa-solid fa-bars"></i></button>
+    </div>
+
+    <!-- OVERLAY ESCURO PARA MOBILE -->
+    <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-30 hidden md:hidden"></div>
+
+    <!-- SIDEBAR (Menu Lateral adaptável) -->
+    <aside id="sidebar" class="w-64 bg-purple-800 text-white flex flex-col h-full shadow-xl fixed inset-y-0 left-0 transform -translate-x-full transition-transform duration-300 ease-in-out z-40 md:relative md:translate-x-0">
+        <div class="p-6 flex justify-between items-center border-b border-purple-700 md:border-none">
             <h1 class="text-2xl font-bold flex items-center gap-2"><i class="fa-solid fa-clover text-purple-300"></i> LotoExpert</h1>
+            <button id="btn-close-menu" class="md:hidden text-white text-2xl"><i class="fa-solid fa-xmark"></i></button>
         </div>
-        <nav class="flex-1 px-4 space-y-2 mt-4">
+        <nav class="flex-1 px-4 space-y-2 mt-4 overflow-y-auto">
             <button onclick="mudarAba('dashboard')" class="aba-btn w-full text-left p-3 rounded-lg bg-purple-700 flex items-center gap-3 font-medium transition" data-target="dashboard">
-                <i class="fa-solid fa-chart-line w-5"></i> Estatísticas
+                <i class="fa-solid fa-chart-line w-5 text-center"></i> Estatísticas
             </button>
             <button onclick="mudarAba('gerador')" class="aba-btn w-full text-left p-3 rounded-lg hover:bg-purple-700 flex items-center gap-3 font-medium transition" data-target="gerador">
-                <i class="fa-solid fa-wand-magic-sparkles w-5"></i> Gerador Inteligente
+                <i class="fa-solid fa-wand-magic-sparkles w-5 text-center"></i> Gerador Inteligente
             </button>
             <button onclick="mudarAba('meus-jogos')" class="aba-btn w-full text-left p-3 rounded-lg hover:bg-purple-700 flex items-center gap-3 font-medium transition" data-target="meus-jogos">
-                <i class="fa-solid fa-ticket w-5"></i> Meus Jogos
+                <i class="fa-solid fa-ticket w-5 text-center"></i> Meus Jogos
             </button>
             <button onclick="mudarAba('analise')" class="aba-btn w-full text-left p-3 rounded-lg hover:bg-purple-700 flex items-center gap-3 font-medium transition" data-target="analise">
-                <i class="fa-solid fa-magnifying-glass-chart w-5"></i> Análise & Sugestões
+                <i class="fa-solid fa-magnifying-glass-chart w-5 text-center"></i> Análise & Sugestões
             </button>
         </nav>
         <div class="p-4 border-t border-purple-700 text-xs text-purple-300">
             <p>Logado como:</p>
-            <p id="user-email-display" class="font-bold truncate text-white">Carregando...</p>
-            <button id="btn-logout" class="mt-3 w-full bg-red-500 hover:bg-red-600 text-white p-2 rounded flex items-center justify-center gap-2 font-bold transition">
+            <p id="user-email-display" class="font-bold truncate text-white text-sm mt-1">Carregando...</p>
+            <button id="btn-logout" class="mt-4 w-full bg-red-500 hover:bg-red-600 text-white p-3 rounded-lg flex items-center justify-center gap-2 font-bold transition">
                 <i class="fa-solid fa-right-from-bracket"></i> Sair
             </button>
         </div>
     </aside>
 
     <!-- CONTEÚDO PRINCIPAL -->
-    <main class="flex-1 overflow-y-auto p-8 relative">
+    <main class="flex-1 overflow-y-auto p-4 sm:p-6 md:p-8 relative w-full bg-gray-50">
         
         <!-- DASHBOARD (Estatísticas) -->
         <section id="dashboard" class="secao-conteudo secao-ativa max-w-5xl mx-auto">
-            <div class="flex justify-between items-center mb-6">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
                 <div>
-                    <h2 class="text-3xl font-bold text-gray-800">Painel de Estatísticas</h2>
-                    <p class="text-gray-500">Dados baseados no histórico e tendências recentes</p>
+                    <h2 class="text-2xl md:text-3xl font-bold text-gray-800">Estatísticas</h2>
+                    <p class="text-sm md:text-base text-gray-500">Dados baseados no histórico e tendências</p>
                 </div>
-                <button onclick="carregarDadosAPI()" class="bg-purple-100 text-purple-700 px-4 py-2 rounded-lg font-bold hover:bg-purple-200 transition text-sm">
-                    <i class="fa-solid fa-rotate mr-1"></i> Atualizar API
+                <button onclick="carregarDadosAPI()" class="bg-purple-100 text-purple-700 px-3 py-2 md:px-4 rounded-lg font-bold hover:bg-purple-200 transition text-sm flex items-center gap-2 w-full sm:w-auto justify-center">
+                    <i class="fa-solid fa-rotate"></i> Atualizar API
                 </button>
             </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6 mb-8">
+                <!-- Concurso API -->
                 <div class="bg-gradient-to-br from-purple-600 to-purple-800 rounded-xl p-6 text-white shadow-lg relative overflow-hidden">
                     <i class="fa-solid fa-clover absolute -right-6 -top-6 text-9xl opacity-20"></i>
-                    <p class="text-purple-200 text-sm font-semibold mb-1 uppercase tracking-wider flex items-center gap-2">
+                    <p class="text-purple-200 text-xs md:text-sm font-semibold mb-1 uppercase tracking-wider flex items-center gap-2">
                         <i class="fa-solid fa-ticket"></i> Próximo Concurso <span id="api-num-concurso">(Buscando...)</span>
                     </p>
-                    <h3 class="text-4xl font-bold mb-1" id="api-premio">R$ --</h3>
-                    <p class="text-sm text-purple-200 mb-6" id="api-data">Atualizando data...</p>
+                    <h3 class="text-3xl md:text-4xl font-bold mb-1" id="api-premio">R$ --</h3>
+                    <p class="text-xs md:text-sm text-purple-200 mb-6" id="api-data">Atualizando data...</p>
                     <div class="bg-purple-900/50 rounded-lg p-3 flex justify-between items-center text-sm">
                         <span>Aposta Simples (15)</span>
                         <span class="font-bold">R$ 3,00</span>
                     </div>
                 </div>
 
-                <div class="lg:col-span-2 bg-white rounded-xl shadow border border-gray-100 p-6">
+                <!-- Tabela de Premiação -->
+                <div class="lg:col-span-2 bg-white rounded-xl shadow border border-gray-100 p-4 md:p-6">
                     <p class="text-gray-500 font-bold text-sm mb-4 uppercase flex items-center gap-2"><i class="fa-solid fa-award text-yellow-500"></i> Premiações por Acertos</p>
-                    <div class="grid grid-cols-5 gap-2 text-center">
-                        <div class="bg-gray-50 rounded p-3 border border-gray-100"><p class="text-xs text-gray-500 mb-1">11 Acertos</p><p class="font-bold text-gray-800">R$ 6,00</p></div>
-                        <div class="bg-gray-50 rounded p-3 border border-gray-100"><p class="text-xs text-gray-500 mb-1">12 Acertos</p><p class="font-bold text-gray-800">R$ 12,00</p></div>
-                        <div class="bg-gray-50 rounded p-3 border border-gray-100"><p class="text-xs text-gray-500 mb-1">13 Acertos</p><p class="font-bold text-gray-800">R$ 30,00</p></div>
-                        <div class="bg-yellow-50 rounded p-3 border border-yellow-200"><p class="text-xs text-yellow-700 mb-1">14 Acertos</p><p class="font-bold text-yellow-800">Variável</p></div>
-                        <div class="bg-green-50 rounded p-3 border border-green-200"><p class="text-xs text-green-700 mb-1">15 Acertos</p><p class="font-bold text-green-700 leading-tight">Máximo</p></div>
+                    <div class="grid grid-cols-5 gap-1 md:gap-2 text-center overflow-x-auto pb-2">
+                        <div class="bg-gray-50 rounded p-2 md:p-3 border border-gray-100 min-w-[60px]"><p class="text-[10px] md:text-xs text-gray-500 mb-1">11 Acertos</p><p class="font-bold text-gray-800 text-xs md:text-base">R$ 6</p></div>
+                        <div class="bg-gray-50 rounded p-2 md:p-3 border border-gray-100 min-w-[60px]"><p class="text-[10px] md:text-xs text-gray-500 mb-1">12 Acertos</p><p class="font-bold text-gray-800 text-xs md:text-base">R$ 12</p></div>
+                        <div class="bg-gray-50 rounded p-2 md:p-3 border border-gray-100 min-w-[60px]"><p class="text-[10px] md:text-xs text-gray-500 mb-1">13 Acertos</p><p class="font-bold text-gray-800 text-xs md:text-base">R$ 30</p></div>
+                        <div class="bg-yellow-50 rounded p-2 md:p-3 border border-yellow-200 min-w-[60px]"><p class="text-[10px] md:text-xs text-yellow-700 mb-1">14 Acertos</p><p class="font-bold text-yellow-800 text-xs md:text-base">Variável</p></div>
+                        <div class="bg-green-50 rounded p-2 md:p-3 border border-green-200 min-w-[60px]"><p class="text-[10px] md:text-xs text-green-700 mb-1">15 Acertos</p><p class="font-bold text-green-700 leading-tight text-xs md:text-sm">Máximo</p></div>
                     </div>
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div class="bg-white p-6 rounded-xl shadow border border-gray-100">
-                    <h3 class="text-lg font-bold text-gray-800 flex items-center gap-2 mb-2"><div class="w-8 h-8 rounded bg-red-100 flex items-center justify-center text-red-500"><i class="fa-solid fa-fire"></i></div> Dezenas Quentes</h3>
-                    <p class="text-sm text-gray-500 mb-4">Mais sorteadas recentemente</p>
-                    <div class="flex flex-wrap gap-2" id="lista-quentes"></div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
+                <!-- Painéis de Dezenas -->
+                <div class="bg-white p-4 md:p-6 rounded-xl shadow border border-gray-100">
+                    <h3 class="text-base md:text-lg font-bold text-gray-800 flex items-center gap-2 mb-1 md:mb-2"><div class="w-8 h-8 rounded bg-red-100 flex items-center justify-center text-red-500"><i class="fa-solid fa-fire text-sm"></i></div> Dezenas Quentes</h3>
+                    <p class="text-xs md:text-sm text-gray-500 mb-4">Mais sorteadas recentemente</p>
+                    <div class="flex flex-wrap gap-1 md:gap-2" id="lista-quentes"></div>
                 </div>
-                <div class="bg-white p-6 rounded-xl shadow border border-gray-100">
-                    <h3 class="text-lg font-bold text-gray-800 flex items-center gap-2 mb-2"><div class="w-8 h-8 rounded bg-blue-100 flex items-center justify-center text-blue-500"><i class="fa-solid fa-snowflake"></i></div> Dezenas Frias</h3>
-                    <p class="text-sm text-gray-500 mb-4">Menos sorteadas (evitar)</p>
-                    <div class="flex flex-wrap gap-2" id="lista-frias"></div>
+                <div class="bg-white p-4 md:p-6 rounded-xl shadow border border-gray-100">
+                    <h3 class="text-base md:text-lg font-bold text-gray-800 flex items-center gap-2 mb-1 md:mb-2"><div class="w-8 h-8 rounded bg-blue-100 flex items-center justify-center text-blue-500"><i class="fa-solid fa-snowflake text-sm"></i></div> Dezenas Frias</h3>
+                    <p class="text-xs md:text-sm text-gray-500 mb-4">Menos sorteadas (evitar)</p>
+                    <div class="flex flex-wrap gap-1 md:gap-2" id="lista-frias"></div>
                 </div>
-                <div class="bg-white p-6 rounded-xl shadow border border-gray-100">
-                    <h3 class="text-lg font-bold text-gray-800 flex items-center gap-2 mb-2"><div class="w-8 h-8 rounded bg-green-100 flex items-center justify-center text-green-500"><i class="fa-solid fa-arrow-trend-up"></i></div> Em Tendência</h3>
-                    <p class="text-sm text-gray-500 mb-4">Estão ganhando força agora</p>
-                    <div class="flex flex-wrap gap-2" id="lista-tendencia"></div>
+                <div class="bg-white p-4 md:p-6 rounded-xl shadow border border-gray-100">
+                    <h3 class="text-base md:text-lg font-bold text-gray-800 flex items-center gap-2 mb-1 md:mb-2"><div class="w-8 h-8 rounded bg-green-100 flex items-center justify-center text-green-500"><i class="fa-solid fa-arrow-trend-up text-sm"></i></div> Em Tendência</h3>
+                    <p class="text-xs md:text-sm text-gray-500 mb-4">Estão ganhando força agora</p>
+                    <div class="flex flex-wrap gap-1 md:gap-2" id="lista-tendencia"></div>
                 </div>
             </div>
         </section>
 
         <!-- GERADOR INTELIGENTE -->
         <section id="gerador" class="secao-conteudo max-w-5xl mx-auto">
-            <h2 class="text-3xl font-bold text-gray-800 mb-2">Gerador Inteligente</h2>
-            <p class="text-gray-500 mb-6">Deixe a inteligência artificial criar as melhores combinações para você.</p>
+            <h2 class="text-2xl md:text-3xl font-bold text-gray-800 mb-2">Gerador Inteligente</h2>
+            <p class="text-sm md:text-base text-gray-500 mb-6">Deixe a inteligência artificial criar as melhores combinações para você.</p>
             
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6 mb-8">
                 <!-- Coluna Esquerda -->
-                <div class="md:col-span-1 space-y-6">
-                    <div class="bg-white p-6 rounded-xl shadow border border-purple-200">
-                        <h3 class="font-bold text-purple-800 mb-4 flex items-center gap-2"><i class="fa-solid fa-robot"></i> Inteligência do Sorteio</h3>
+                <div class="md:col-span-1 space-y-4 md:space-y-6">
+                    <div class="bg-white p-4 md:p-6 rounded-xl shadow border border-purple-200">
+                        <h3 class="font-bold text-purple-800 mb-4 flex items-center gap-2"><i class="fa-solid fa-robot"></i> Inteligência</h3>
                         
                         <div class="mb-4">
-                            <label class="block text-sm font-bold text-gray-700 mb-1">Selecione o Módulo (Estratégia):</label>
-                            <select id="estrategia-gerador" class="w-full border border-gray-300 rounded-lg p-3 bg-gray-50 focus:outline-purple-500 text-gray-800 font-medium cursor-pointer">
-                                <option value="tendencia">Módulo 1: Forte em Tendência Atual</option>
-                                <option value="historico">Módulo 2: Forte no Histórico Global</option>
-                                <option value="balanceado">Módulo 3: Balanceado (Mix Perfeito)</option>
+                            <label class="block text-xs md:text-sm font-bold text-gray-700 mb-1">Selecione o Módulo:</label>
+                            <select id="estrategia-gerador" class="w-full border border-gray-300 rounded-lg p-2 md:p-3 bg-gray-50 focus:outline-purple-500 text-sm md:text-base cursor-pointer">
+                                <option value="tendencia">Módulo 1: Forte em Tendência</option>
+                                <option value="historico">Módulo 2: Histórico Global</option>
+                                <option value="balanceado">Módulo 3: Balanceado</option>
                             </select>
                         </div>
                         
                         <div class="mb-6">
-                            <label class="block text-sm font-bold text-gray-700 mb-1">Quantidade de Apostas:</label>
-                            <input type="number" id="qtd-jogos" value="10" min="1" max="50" class="w-full border border-gray-300 rounded-lg p-3 focus:outline-purple-500 text-lg">
+                            <label class="block text-xs md:text-sm font-bold text-gray-700 mb-1">Quantidade de Apostas:</label>
+                            <input type="number" id="qtd-jogos" value="10" min="1" max="50" class="w-full border border-gray-300 rounded-lg p-2 md:p-3 focus:outline-purple-500 text-base md:text-lg">
                         </div>
 
-                        <button onclick="gerarApostasInteligentes()" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-4 rounded-lg transition shadow-lg flex items-center justify-center gap-2 text-lg">
+                        <button onclick="gerarApostasInteligentes()" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 md:py-4 rounded-lg transition shadow-lg flex items-center justify-center gap-2 text-base md:text-lg">
                             <i class="fa-solid fa-wand-magic-sparkles"></i> Gerar Jogos
                         </button>
                     </div>
 
-                    <div class="bg-white p-6 rounded-xl shadow border border-gray-100 opacity-80 hover:opacity-100 transition">
+                    <div class="bg-white p-4 md:p-6 rounded-xl shadow border border-gray-100 md:opacity-90 hover:opacity-100 transition">
                         <div class="flex justify-between items-start mb-2">
-                            <h3 class="font-bold text-gray-700 text-sm flex items-center gap-2"><i class="fa-solid fa-bullseye"></i> Forçar Dezenas (Opcional)</h3>
+                            <h3 class="font-bold text-gray-700 text-sm md:text-base flex items-center gap-2"><i class="fa-solid fa-bullseye"></i> Forçar Dezenas</h3>
                             <button onclick="limparGerador()" class="text-red-500 text-xs hover:underline">Limpar</button>
                         </div>
-                        <p class="text-xs text-gray-500 mb-3">Se quiser forçar os jogos a usarem seus números, marque de 15 a 20 abaixo. Senão, <b>deixe vazio para usar a inteligência acima.</b></p>
+                        <p class="text-xs text-gray-500 mb-3 hidden md:block">Marque de 15 a 20 abaixo. Senão, deixe vazio para o modo inteligente.</p>
                         <p class="text-xs font-bold mb-2">Selecionadas: <span id="contador-gerador" class="text-purple-600">0</span>/20</p>
-                        <div class="grid grid-cols-5 gap-1" id="volante-gerador"></div>
+                        <!-- Ajuste do grid gap para mobile -->
+                        <div class="grid grid-cols-5 gap-1 sm:gap-2" id="volante-gerador"></div>
                     </div>
                 </div>
 
                 <!-- Coluna Direita -->
                 <div class="md:col-span-2">
-                    <div class="bg-white p-6 rounded-xl shadow border border-gray-100 min-h-full">
-                        <div class="flex justify-between items-center mb-6 pb-2 border-b">
-                            <h3 class="font-bold text-gray-800 text-xl">Jogos Gerados</h3>
-                            <div id="acoes-gerador" class="hidden flex gap-2">
-                                <button onclick="salvarTodosGerados()" id="btn-salvar-todos" class="bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded font-bold transition text-sm flex items-center gap-2">
+                    <div class="bg-white p-4 md:p-6 rounded-xl shadow border border-gray-100 min-h-full">
+                        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-4 md:mb-6 pb-2 border-b">
+                            <h3 class="font-bold text-gray-800 text-lg md:text-xl">Jogos Gerados</h3>
+                            <div id="acoes-gerador" class="hidden flex flex-wrap gap-2 w-full sm:w-auto">
+                                <button onclick="salvarTodosGerados()" id="btn-salvar-todos" class="flex-1 sm:flex-none bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded font-bold transition text-xs md:text-sm flex items-center justify-center gap-2">
                                     <i class="fa-solid fa-cloud-arrow-up"></i> Salvar Todos
                                 </button>
-                                <button onclick="baixarPDF('gerador')" class="bg-gray-800 hover:bg-black text-white px-3 py-2 rounded font-bold transition text-sm flex items-center gap-2">
+                                <button onclick="baixarPDF('gerador')" class="flex-1 sm:flex-none bg-gray-800 hover:bg-black text-white px-3 py-2 rounded font-bold transition text-xs md:text-sm flex items-center justify-center gap-2">
                                     <i class="fa-solid fa-file-pdf"></i> PDF (A4)
                                 </button>
                             </div>
                         </div>
                         <div id="resultado-gerador" class="space-y-3">
-                            <div class="text-center text-gray-400 py-10 flex flex-col items-center">
+                            <div class="text-center text-gray-400 py-10 flex flex-col items-center px-4">
                                 <i class="fa-solid fa-robot text-5xl mb-3 opacity-20"></i>
-                                <p>Escolha um módulo ao lado e clique em "Gerar Jogos" para o sistema criar as apostas automaticamente.</p>
+                                <p class="text-sm">Escolha um módulo ao lado e clique em "Gerar Jogos" para o sistema criar as apostas automaticamente.</p>
                             </div>
                         </div>
                     </div>
@@ -198,476 +216,17 @@
 
         <!-- MEUS JOGOS -->
         <section id="meus-jogos" class="secao-conteudo max-w-5xl mx-auto">
-            <h2 class="text-3xl font-bold text-gray-800 mb-2">Meus Jogos</h2>
-            <p class="text-gray-500 mb-6">Seus jogos salvos e protegidos na sua conta.</p>
+            <h2 class="text-2xl md:text-3xl font-bold text-gray-800 mb-2">Meus Jogos</h2>
+            <p class="text-sm md:text-base text-gray-500 mb-6">Seus jogos salvos e protegidos na sua conta.</p>
 
-            <div class="bg-white p-6 rounded-xl shadow border border-gray-100 mb-8 border-l-4 border-l-purple-500">
-                <div class="flex items-center gap-2 mb-4">
-                    <div class="w-8 h-8 rounded-full border border-purple-200 flex items-center justify-center text-purple-600"><i class="fa-solid fa-plus"></i></div>
-                    <h3 class="font-bold text-gray-800 text-xl">Inserir Jogo Manual</h3>
+            <div class="bg-white p-4 md:p-6 rounded-xl shadow border border-gray-100 mb-8 border-l-4 border-l-purple-500">
+                <div class="flex items-center gap-2 mb-2">
+                    <div class="w-6 h-6 md:w-8 md:h-8 rounded-full border border-purple-200 flex items-center justify-center text-purple-600 text-sm md:text-base"><i class="fa-solid fa-plus"></i></div>
+                    <h3 class="font-bold text-gray-800 text-lg md:text-xl">Inserir Jogo Manual</h3>
                 </div>
-                <p class="text-gray-600 mb-6">Selecione as 15 dezenas para registrar e salvar o seu jogo feito.</p>
-                <p class="text-lg text-gray-800 mb-4">Dezenas Marcadas: <span id="contador-manual" class="font-bold text-purple-600 text-xl">0</span>/15</p>
+                <p class="text-xs md:text-sm text-gray-600 mb-4 md:mb-6">Selecione as 15 dezenas para registrar o seu jogo.</p>
+                <p class="text-base md:text-lg text-gray-800 mb-3 md:mb-4">Dezenas Marcadas: <span id="contador-manual" class="font-bold text-purple-600">0</span>/15</p>
                 
-                <div class="grid grid-cols-5 md:grid-cols-10 gap-2 mb-6" id="volante-manual"></div>
-                <button id="btn-salvar-manual" onclick="salvarJogoManual()" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 rounded-lg transition disabled:opacity-50" disabled>
-                    <i class="fa-solid fa-floppy-disk mr-2"></i> Salvar Jogo
-                </button>
-            </div>
-
-            <div class="flex justify-between items-center mb-4 border-b pb-2">
-                <h3 class="font-bold text-gray-800 text-xl">Lista de Jogos Salvos</h3>
-                <button onclick="baixarPDF('salvos')" class="bg-gray-800 hover:bg-black text-white px-4 py-2 rounded-lg font-bold transition shadow text-sm flex items-center gap-2">
-                    <i class="fa-solid fa-file-pdf"></i> Imprimir Meus Jogos
-                </button>
-            </div>
-            <div id="lista-jogos-salvos" class="space-y-3">
-                <p class="text-gray-500 italic">Carregando seus jogos...</p>
-            </div>
-        </section>
-
-        <!-- ANÁLISE E SUGESTÕES -->
-        <section id="analise" class="secao-conteudo max-w-5xl mx-auto">
-            <h2 class="text-3xl font-bold text-gray-800 mb-2">Análise & Sugestões Anti-Repetição</h2>
-            <p class="text-gray-500 mb-6">Avaliação matemática das suas apostas salvas e cálculo de probabilidades.</p>
-
-            <!-- NOVO: Painel de Probabilidades (Chances de Ganhar) -->
-            <div id="painel-chances" class="bg-gradient-to-r from-purple-800 to-indigo-900 text-white p-6 rounded-xl shadow mb-6 hidden">
-                <!-- Conteúdo inserido via JS -->
-            </div>
-
-            <div class="bg-white p-6 rounded-xl shadow border border-gray-100 mb-6">
-                <h3 class="font-bold text-gray-800 text-xl mb-4 border-b pb-2">Análise de Pares e Ímpares</h3>
-                <div id="painel-analise"><p class="text-center text-gray-500 py-8">Carregando análise...</p></div>
-            </div>
-
-            <!-- RESTAURADO: Gerador Anti-Repetição com Módulos -->
-            <div class="bg-purple-50 border border-purple-200 p-6 rounded-xl mb-6 shadow">
-                <h3 class="font-bold text-purple-800 text-xl mb-2"><i class="fa-solid fa-shield-halved"></i> Gerador Anti-Repetição</h3>
-                <p class="text-sm text-gray-600 mb-6">Gere novos jogos baseados nas estatísticas. O sistema garante que <b>NENHUM</b> deles repetirá os jogos que você já tem salvos.</p>
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-                    <div>
-                        <label class="block text-sm font-bold text-gray-700 mb-1">Estratégia Matemática:</label>
-                        <select id="estrategia-anti-repeticao" class="w-full border border-purple-300 rounded p-3 focus:outline-purple-500 bg-white">
-                            <option value="tendencia">Forte em Tendência Atual</option>
-                            <option value="historico">Forte no Histórico Global</option>
-                            <option value="balanceado">Balanceado (Mistura Ideal)</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="block text-sm font-bold text-gray-700 mb-1">Qtd. de Jogos Inéditos:</label>
-                        <input type="number" id="qtd-anti-repeticao" value="1" min="1" max="20" class="w-full border border-purple-300 rounded p-3 focus:outline-purple-500">
-                    </div>
-                </div>
-                <button onclick="gerarSugestoesIneditas()" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 rounded transition shadow-md">
-                    Gerar Jogos Inéditos
-                </button>
-                
-                <div id="resultado-sugestoes" class="mt-6 space-y-3"></div>
-            </div>
-        </section>
-    </main>
-
-    <!-- FIREBASE E JAVASCRIPT -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, where, writeBatch } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
-        import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-
-        const firebaseConfig = {
-          apiKey: "AIzaSyAOxuFG3nuf19awqFtdMQfr91YiFnmdhBM",
-          authDomain: "estatisticaloto.firebaseapp.com",
-          databaseURL: "https://estatisticaloto-default-rtdb.firebaseio.com",
-          projectId: "estatisticaloto",
-          storageBucket: "estatisticaloto.firebasestorage.app",
-          messagingSenderId: "88640221049",
-          appId: "1:88640221049:web:6475dfec49e95f55cd09a8"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const auth = getAuth(app);
-
-        // VARIÁVEIS E ESTATÍSTICAS
-        const dezenasQuentes = [20, 25, 2, 4, 13];
-        const dezenasFrias = [17, 18, 22, 6, 9];
-        const dezenasTendencia = [21, 7, 12, 4, 15]; 
-        const tendenciaAtual = [25, 20, 1, 11, 10, 12, 4, 15, 21, 24, 5, 7, 9, 2, 6];
-        const historicoGlobal = [20, 25, 10, 11, 13, 24, 1, 4, 14, 5, 3, 12, 2, 15, 9];
-        
-        let selecaoGerador = [];
-        let selecaoManual = [];
-        let jogosSalvosNuvem = [];
-        let ultimosJogosGerados = [];
-        let usuarioAtual = null;
-
-        // ====== AUTENTICAÇÃO ======
-        const loginOverlay = document.getElementById('login-overlay');
-        const loginError = document.getElementById('login-error');
-
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                usuarioAtual = user; document.getElementById('user-email-display').innerText = user.email;
-                loginOverlay.classList.add('hidden'); carregarJogos();
-            } else {
-                usuarioAtual = null; loginOverlay.classList.remove('hidden');
-                document.getElementById('lista-jogos-salvos').innerHTML = ''; jogosSalvosNuvem = [];
-            }
-        });
-
-        document.getElementById('btn-login').addEventListener('click', () => {
-            const btn = document.getElementById('btn-login'); loginError.classList.add('hidden'); btn.innerText = 'Entrando...';
-            signInWithEmailAndPassword(auth, document.getElementById('email-input').value, document.getElementById('password-input').value)
-                .then(() => { btn.innerText = 'Entrar'; })
-                .catch(() => { btn.innerText = 'Entrar'; loginError.textContent = 'E-mail ou senha incorretos.'; loginError.classList.remove('hidden'); });
-        });
-
-        document.getElementById('btn-register').addEventListener('click', () => {
-            const btn = document.getElementById('btn-register'); loginError.classList.add('hidden'); btn.innerText = 'Criando...';
-            createUserWithEmailAndPassword(auth, document.getElementById('email-input').value, document.getElementById('password-input').value)
-                .then(() => { btn.innerText = 'Criar Nova Conta'; })
-                .catch((e) => { btn.innerText = 'Criar Nova Conta'; loginError.textContent = 'Erro ao criar conta. Tente outra senha.'; loginError.classList.remove('hidden'); });
-        });
-
-        document.getElementById('btn-logout').addEventListener('click', () => { signOut(auth); });
-
-        // ====== NAVEGAÇÃO ======
-        window.mudarAba = function(idAlvo) {
-            document.querySelectorAll('.secao-conteudo').forEach(el => el.classList.remove('secao-ativa'));
-            document.getElementById(idAlvo).classList.add('secao-ativa');
-            document.querySelectorAll('.aba-btn').forEach(btn => {
-                btn.classList.remove('bg-purple-700'); if(btn.dataset.target === idAlvo) btn.classList.add('bg-purple-700');
-            });
-            if(idAlvo === 'analise') renderizarAnalise();
-        }
-
-        // ====== DASHBOARD E API ======
-        function initDashboard() {
-            dezenasQuentes.forEach(n => document.getElementById('lista-quentes').innerHTML += `<div class="bola bola-quente">${String(n).padStart(2,'0')}</div>`);
-            dezenasFrias.forEach(n => document.getElementById('lista-frias').innerHTML += `<div class="bola bola-fria">${String(n).padStart(2,'0')}</div>`);
-            dezenasTendencia.forEach(n => document.getElementById('lista-tendencia').innerHTML += `<div class="bola bola-tendencia">${String(n).padStart(2,'0')}</div>`);
-        }
-
-        window.carregarDadosAPI = async function() {
-            const btnNum = document.getElementById('api-num-concurso');
-            const btnPremio = document.getElementById('api-premio');
-            btnNum.innerText = "(Atualizando...)";
-            try {
-                const res = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent('https://servicebus2.caixa.gov.br/portaldeloterias/api/lotofacil/')}`);
-                const data = JSON.parse((await res.json()).contents);
-                btnNum.innerText = `(${data.numero + 1})`;
-                btnPremio.innerText = data.valorEstimadoProximoConcurso ? data.valorEstimadoProximoConcurso.toLocaleString('pt-BR', {style: 'currency', currency: 'BRL'}) : "R$ 1.700.000,00";
-                document.getElementById('api-data').innerText = `Data do próximo: ${data.dataProximoConcurso}`;
-            } catch (e) {
-                btnNum.innerText = "(Erro)"; btnPremio.innerText = "R$ 1.700.000,00";
-            }
-        }
-
-        // ====== GERADOR INTELIGENTE ======
-        function initGerador() {
-            const painel = document.getElementById('volante-gerador');
-            for(let i=1; i<=25; i++) {
-                const b = document.createElement('div');
-                b.className = 'bola w-8 h-8 text-xs cursor-pointer'; b.innerText = String(i).padStart(2,'0');
-                b.onclick = () => toggleGerador(i, b);
-                painel.appendChild(b);
-            }
-        }
-
-        function toggleGerador(num, el) {
-            const idx = selecaoGerador.indexOf(num);
-            if(idx > -1) { selecaoGerador.splice(idx, 1); el.classList.remove('bola-selecionada'); }
-            else { 
-                if(selecaoGerador.length >= 20) return; 
-                selecaoGerador.push(num); el.classList.add('bola-selecionada'); 
-            }
-            document.getElementById('contador-gerador').innerText = selecaoGerador.length;
-        }
-
-        window.limparGerador = function() {
-            selecaoGerador = [];
-            document.querySelectorAll('#volante-gerador .bola').forEach(b => b.classList.remove('bola-selecionada'));
-            document.getElementById('contador-gerador').innerText = '0';
-        }
-
-        window.gerarApostasInteligentes = function() {
-            const qtd = Math.min(parseInt(document.getElementById('qtd-jogos').value) || 1, 50);
-            const estrategia = document.getElementById('estrategia-gerador').value;
-            const container = document.getElementById('resultado-gerador');
-            
-            if(selecaoGerador.length > 0 && selecaoGerador.length < 15) {
-                return alert("Para forçar o jogo, marque de 15 a 20 dezenas, ou clique em LIMPAR para deixar o sistema gerar automaticamente.");
-            }
-            
-            container.innerHTML = '';
-            ultimosJogosGerados = [];
-            
-            for(let i=0; i<qtd; i++) {
-                let aposta = [];
-                
-                if(selecaoGerador.length >= 15) {
-                    aposta = [...selecaoGerador].sort(() => 0.5 - Math.random()).slice(0, 15);
-                } 
-                else {
-                    let baseDezenas = [];
-                    let qtdFriasPermitidas = 1;
-
-                    if (estrategia === 'tendencia') baseDezenas = [...tendenciaAtual].sort(() => 0.5 - Math.random()).slice(0, 10);
-                    else if (estrategia === 'historico') baseDezenas = [...historicoGlobal].sort(() => 0.5 - Math.random()).slice(0, 10);
-                    else { 
-                        let misto = [...new Set([...dezenasQuentes, ...dezenasTendencia])];
-                        baseDezenas = misto.sort(() => 0.5 - Math.random()).slice(0, 8);
-                    }
-                    
-                    aposta = [...baseDezenas];
-                    let todasAsDezenas = Array.from({length: 25}, (_, i) => i + 1);
-                    let dezenasSobrando = todasAsDezenas.filter(n => !aposta.includes(n));
-                    dezenasSobrando = dezenasSobrando.sort(() => 0.5 - Math.random());
-                    
-                    for(let num of dezenasSobrando) {
-                        if(aposta.length >= 15) break;
-                        if(dezenasFrias.includes(num)) {
-                            if(qtdFriasPermitidas > 0) { aposta.push(num); qtdFriasPermitidas--; }
-                        } else {
-                            aposta.push(num);
-                        }
-                    }
-                }
-                
-                aposta.sort((a,b)=>a-b);
-                ultimosJogosGerados.push(aposta);
-                
-                const box = document.createElement('div');
-                box.className = 'p-3 border rounded-lg bg-gray-50 flex flex-col md:flex-row justify-between items-center gap-3';
-                const bolasHtml = aposta.map(n => `<div class="bola w-8 h-8 text-xs cursor-default bg-white border-purple-300 text-purple-900 shadow-sm">${String(n).padStart(2,'0')}</div>`).join('');
-                
-                box.innerHTML = `
-                    <div class="flex flex-wrap gap-1 justify-center">${bolasHtml}</div>
-                    <button class="text-purple-600 hover:bg-purple-100 px-3 py-1 rounded text-sm font-bold transition flex items-center gap-1" onclick="salvarJogoDireto([${aposta}], this)">
-                        <i class="fa-solid fa-floppy-disk"></i> Salvar
-                    </button>`;
-                container.appendChild(box);
-            }
-            document.getElementById('acoes-gerador').classList.remove('hidden');
-        }
-
-        window.salvarTodosGerados = async function() {
-            if(!usuarioAtual || ultimosJogosGerados.length === 0) return;
-            const btn = document.getElementById('btn-salvar-todos');
-            btn.innerText = "Salvando..."; btn.disabled = true;
-            try {
-                const batch = writeBatch(db);
-                ultimosJogosGerados.forEach(jogo => {
-                    batch.set(doc(collection(db, "jogos")), { userId: usuarioAtual.uid, numeros: jogo, data: new Date().toISOString() });
-                });
-                await batch.commit();
-                btn.classList.replace('bg-green-600', 'bg-gray-500'); btn.innerHTML = `<i class="fa-solid fa-check"></i> Salvos`;
-                carregarJogos();
-            } catch(e) { btn.innerText = "Erro"; }
-        }
-
-        // ====== VOLANTE MANUAL ======
-        function initManual() {
-            const painel = document.getElementById('volante-manual');
-            for(let i=1; i<=25; i++) {
-                const b = document.createElement('div');
-                b.className = 'bola'; b.innerText = String(i).padStart(2,'0');
-                b.onclick = () => {
-                    const idx = selecaoManual.indexOf(i);
-                    if(idx > -1) { selecaoManual.splice(idx, 1); b.classList.remove('bola-selecionada'); }
-                    else if(selecaoManual.length < 15) { selecaoManual.push(i); b.classList.add('bola-selecionada'); }
-                    document.getElementById('contador-manual').innerText = selecaoManual.length;
-                    document.getElementById('btn-salvar-manual').disabled = selecaoManual.length !== 15;
-                };
-                painel.appendChild(b);
-            }
-        }
-
-        window.salvarJogoManual = async function() {
-            const btn = document.getElementById('btn-salvar-manual');
-            if(selecaoManual.length !== 15 || !usuarioAtual) return;
-            btn.innerText = "Salvando...";
-            try {
-                await addDoc(collection(db, "jogos"), { userId: usuarioAtual.uid, numeros: [...selecaoManual].sort((a,b)=>a-b), data: new Date().toISOString() });
-                selecaoManual = [];
-                document.querySelectorAll('#volante-manual .bola').forEach(b => b.classList.remove('bola-selecionada'));
-                document.getElementById('contador-manual').innerText = `0`;
-                btn.disabled = true; carregarJogos();
-            } finally { btn.innerHTML = `<i class="fa-solid fa-floppy-disk mr-2"></i> Salvar Jogo`; }
-        }
-
-        // ====== GERENCIAR JOGOS ======
-        window.salvarJogoDireto = async function(numeros, btnEl) {
-            if(!usuarioAtual) return; btnEl.innerText = "Salvando...";
-            await addDoc(collection(db, "jogos"), { userId: usuarioAtual.uid, numeros: numeros, data: new Date().toISOString() });
-            btnEl.innerText = "Salvo!"; btnEl.disabled = true; carregarJogos();
-        }
-
-        async function carregarJogos() {
-            if(!usuarioAtual) return;
-            try {
-                const snapshot = await getDocs(query(collection(db, "jogos"), where("userId", "==", usuarioAtual.uid)));
-                jogosSalvosNuvem = [];
-                const container = document.getElementById('lista-jogos-salvos'); container.innerHTML = '';
-                
-                if(snapshot.empty) { container.innerHTML = '<p class="text-gray-500">Nenhum jogo salvo.</p>'; return; }
-
-                snapshot.forEach(docSnap => {
-                    const j = { id: docSnap.id, ...docSnap.data() };
-                    jogosSalvosNuvem.push(j);
-                    const box = document.createElement('div');
-                    box.className = 'p-3 border rounded-lg bg-white flex flex-col md:flex-row justify-between items-center gap-3 shadow-sm';
-                    const bolasHtml = j.numeros.map(n => `<div class="bola bola-selecionada w-8 h-8 text-sm cursor-default">${String(n).padStart(2,'0')}</div>`).join('');
-                    box.innerHTML = `<div class="flex flex-wrap gap-1">${bolasHtml}</div>
-                        <button class="text-red-500 hover:bg-red-50 p-2 rounded transition font-bold text-sm" onclick="deletarJogo('${j.id}')"><i class="fa-solid fa-trash"></i> Excluir</button>`;
-                    container.appendChild(box);
-                });
-                if(document.getElementById('analise').classList.contains('secao-ativa')) renderizarAnalise();
-            } catch (e) {
-                alert("Erro ao carregar jogos: Verifique as regras do Firestore.");
-            }
-        }
-
-        window.deletarJogo = async function(id) {
-            if(confirm("Excluir este jogo permanentemente?")) { await deleteDoc(doc(db, "jogos", id)); carregarJogos(); }
-        }
-
-        // ====== PDF A4 AJUSTADO ======
-        window.baixarPDF = function(origem) {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF();
-            let jogosImp = origem === 'gerador' ? ultimosJogosGerados : jogosSalvosNuvem.map(j => j.numeros);
-            if(jogosImp.length === 0) return alert("Nenhum jogo para imprimir.");
-
-            doc.setFont("helvetica", "bold"); doc.setFontSize(18); doc.setTextColor(147, 51, 234);
-            doc.text(origem === 'gerador' ? "LotoExpert - Jogos Gerados" : "LotoExpert - Meus Jogos Salvos", 15, 20);
-            
-            doc.setFont("helvetica", "normal"); doc.setFontSize(10); doc.setTextColor(100, 100, 100);
-            const dataHoje = new Date().toLocaleDateString('pt-BR');
-            doc.text(`Data: ${dataHoje} | Quantidade: ${jogosImp.length} aposta(s)`, 15, 30);
-            doc.setLineWidth(0.5); doc.line(15, 35, 195, 35);
-
-            let y = 45; 
-            doc.setFont("courier", "bold"); doc.setFontSize(10); doc.setTextColor(30, 30, 30);
-            
-            jogosImp.forEach((jogo, i) => {
-                doc.text(`Aposta ${String(i + 1).padStart(2, '0')}: [ ${jogo.map(n => String(n).padStart(2, '0')).join(' - ')} ]`, 15, y);
-                y += 8; 
-                if(y > 280) { doc.addPage(); y = 20; }
-            });
-
-            doc.setFont("helvetica", "italic"); doc.setFontSize(9); doc.setTextColor(150, 150, 150);
-            doc.text("Boa Sorte! Gerado pelo aplicativo LotoExpert.", 15, doc.internal.pageSize.getHeight() - 10);
-            doc.save(`LotoExpert_${origem}_${dataHoje.replaceAll('/','-')}.pdf`);
-        }
-
-        // ====== ANÁLISE, PROBABILIDADES E ANTI-REPETIÇÃO ======
-        function renderizarAnalise() {
-            const painelAnalise = document.getElementById('painel-analise');
-            const painelChances = document.getElementById('painel-chances');
-            const qtdJogos = jogosSalvosNuvem.length;
-
-            if(qtdJogos === 0) {
-                painelChances.classList.add('hidden');
-                painelAnalise.innerHTML = '<p class="text-center text-gray-500 py-8">Salve alguns jogos primeiro para ver a análise.</p>';
-                document.getElementById('resultado-sugestoes').innerHTML = ''; 
-                return;
-            }
-
-            // MÓDULO DE CHANCES DE GANHAR
-            painelChances.classList.remove('hidden');
-            const chance15 = Math.round(3268760 / qtdJogos).toLocaleString('pt-BR');
-            const chance14 = Math.round(21791 / qtdJogos).toLocaleString('pt-BR');
-            
-            painelChances.innerHTML = `
-                <div class="flex items-center gap-4 mb-4">
-                    <div class="w-14 h-14 bg-yellow-400 text-yellow-900 rounded-full flex items-center justify-center text-2xl shadow-lg border-2 border-yellow-200">
-                        <i class="fa-solid fa-trophy"></i>
-                    </div>
-                    <div>
-                        <h3 class="font-bold text-2xl text-yellow-400">Probabilidade de Ganhar</h3>
-                        <p class="text-sm text-purple-200">Com suas ${qtdJogos} aposta(s) única(s) salva(s), estas são suas chances matemáticas:</p>
-                    </div>
-                </div>
-                <div class="grid grid-cols-2 gap-4 text-center mt-4">
-                    <div class="bg-white/10 p-4 rounded-lg border border-white/20 shadow-inner">
-                        <p class="text-xs uppercase tracking-wider text-purple-200 mb-1">15 Acertos (Prêmio Máximo)</p>
-                        <p class="text-2xl font-bold">1 em ${chance15}</p>
-                    </div>
-                    <div class="bg-white/10 p-4 rounded-lg border border-white/20 shadow-inner">
-                        <p class="text-xs uppercase tracking-wider text-purple-200 mb-1">14 Acertos</p>
-                        <p class="text-2xl font-bold">1 em ${chance14}</p>
-                    </div>
-                </div>
-            `;
-
-            // MÓDULO DE PARES/ÍMPARES
-            let html = `<div class="space-y-4">`;
-            jogosSalvosNuvem.forEach((j, index) => {
-                let pares = j.numeros.filter(n => n % 2 === 0).length;
-                let impares = 15 - pares;
-                let aviso = (pares >= 6 && pares <= 9) ? `<span class="text-green-600 font-bold"><i class="fa-solid fa-check"></i> Equilibrado</span>` : `<span class="text-yellow-600 font-bold"><i class="fa-solid fa-triangle-exclamation"></i> Arriscado</span>`;
-                html += `<div class="p-4 border-b flex justify-between items-center bg-gray-50 rounded">
-                        <div><p class="font-bold text-gray-800">Jogo ${index + 1}</p><p class="text-sm text-gray-600">${impares} Ímpares / ${pares} Pares</p></div>
-                        <div class="text-right text-sm">${aviso}</div></div>`;
-            });
-            painelAnalise.innerHTML = html + `</div>`;
-        }
-
-        // MÓDULO GERADOR ANTI-REPETIÇÃO
-        window.gerarSugestoesIneditas = function() {
-            if(!jogosSalvosNuvem || jogosSalvosNuvem.length === 0) {
-                return alert("Você precisa ter jogos salvos para usar o sistema anti-repetição.");
-            }
-            
-            const qtd = parseInt(document.getElementById('qtd-anti-repeticao').value) || 1;
-            const estrategia = document.getElementById('estrategia-anti-repeticao').value;
-            const container = document.getElementById('resultado-sugestoes');
-            container.innerHTML = '';
-            
-            const jogosStr = jogosSalvosNuvem.map(j => j.numeros.join(','));
-            
-            for(let i=0; i<qtd; i++) {
-                let novaAposta = [];
-                let tentativas = 0;
-                let ehRepetido = true;
-                
-                while(ehRepetido && tentativas < 200) {
-                    let baseDezenas = [];
-                    if (estrategia === 'tendencia') baseDezenas = [...tendenciaAtual].sort(() => 0.5 - Math.random()).slice(0, 10);
-                    else if (estrategia === 'historico') baseDezenas = [...historicoGlobal].sort(() => 0.5 - Math.random()).slice(0, 10);
-                    else {
-                        let misto = [...new Set([...dezenasQuentes, ...dezenasTendencia])];
-                        baseDezenas = misto.sort(() => 0.5 - Math.random()).slice(0, 8);
-                    }
-                    
-                    novaAposta = [...baseDezenas];
-                    let poolRestante = Array.from({length: 25}, (_, i) => i + 1).filter(n => !novaAposta.includes(n) && !dezenasFrias.includes(n)).sort(() => 0.5 - Math.random());
-                    
-                    while(novaAposta.length < 15) novaAposta.push(poolRestante.pop());
-                    novaAposta.sort((a,b)=>a-b);
-                    
-                    ehRepetido = jogosStr.includes(novaAposta.join(','));
-                    tentativas++;
-                }
-                
-                const bolasHtml = novaAposta.map(n => `<div class="bola bola-selecionada cursor-default bg-green-600 border-green-600 shadow">${String(n).padStart(2,'0')}</div>`).join('');
-                
-                const box = document.createElement('div');
-                box.className = 'flex flex-col md:flex-row justify-between items-center gap-3 p-3 bg-white border border-green-200 rounded';
-                box.innerHTML = `
-                    <div class="flex flex-wrap gap-1">${bolasHtml}</div>
-                    <button onclick="salvarJogoDireto([${novaAposta}], this)" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded text-sm font-bold shadow transition flex items-center gap-2">
-                        <i class="fa-solid fa-floppy-disk"></i> Salvar Inédito
-                    </button>
-                `;
-                container.appendChild(box);
-            }
-        }
-
-        // INIT
-        window.onload = () => { initDashboard(); initGerador(); initManual(); carregarDadosAPI(); }
-    </script>
-</body>
-</html>
+                <div class="grid grid-cols-5 md:grid-cols-10 gap-1 md:gap-2 mb-6" id="volante-manual"></div>
+                <button id="btn-salvar-manual" onclick="salvarJogoManual()" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 rounded-lg transition disabled:opacity-50 flex items-center justify-center" disabled>
+                    <i class="fa-solid
