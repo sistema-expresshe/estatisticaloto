@@ -343,9 +343,18 @@
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, collection, query, onSnapshot, addDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // Variáveis de Ambiente e Estado
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'lotoexpert-sim';
-        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : null;
+        // Variáveis de Ambiente e Estado - CONFIGURAÇÃO REAL DO SEU PROJETO
+        const appId = 'estatisticaloto';
+        const firebaseConfig = {
+            apiKey: "AIzaSyAOxuFG3nuf19awqFtdMQfr91YiFnmdhBM",
+            authDomain: "estatisticaloto.firebaseapp.com",
+            databaseURL: "https://estatisticaloto-default-rtdb.firebaseio.com",
+            projectId: "estatisticaloto",
+            storageBucket: "estatisticaloto.firebasestorage.app",
+            messagingSenderId: "88640221049",
+            appId: "1:88640221049:web:6475dfec49e95f55cd09a8",
+            measurementId: "G-9D4VX8HW9K"
+        };
         let auth, db, userId;
         
         // Estado da Aplicação
@@ -855,8 +864,10 @@
         };
 
         async function initApp() {
-            if (!firebaseConfig) {
-                mostrarAlerta("Erro Crítico: Configuração do Firebase ausente no ambiente.", "erro");
+            if (!firebaseConfig.apiKey || firebaseConfig.apiKey === "COLE_SUA_API_KEY_AQUI") {
+                mostrarAlerta("Configure as credenciais do Firebase no código-fonte para salvar na nuvem.", "erro");
+                // Ainda permite usar o app offline gerando dados base
+                initBaseStats();
                 return;
             }
 
@@ -865,14 +876,8 @@
                 auth = getAuth(app);
                 db = getFirestore(app);
 
-                // Autenticação Obrigatória antes de consultas Firestore
-                const customToken = typeof __initial_auth_token !== 'undefined' ? __initial_auth_token : null;
-                
-                if (customToken) {
-                    await signInWithCustomToken(auth, customToken);
-                } else {
-                    await signInAnonymously(auth);
-                }
+                // Login anônimo para que cada usuário que baixe da PlayStore tenha seu próprio banco de dados sem precisar de senha
+                await signInAnonymously(auth);
 
                 // Observador de estado
                 onAuthStateChanged(auth, (user) => {
@@ -889,8 +894,21 @@
                 initBaseStats(); // Inicia estatisticas
 
             } catch (error) {
-                console.error("Erro na inicialização:", error);
-                mostrarAlerta("Erro ao conectar ao servidor. Verifique a internet.", "erro");
+                // Tratamento específico para o erro de Autenticação Anônima desativada
+                if (error?.code === 'auth/admin-restricted-operation' || error?.message?.includes('admin-restricted-operation')) {
+                    console.warn("⚠️ Aviso: O Login Anônimo ainda está desativado no painel do Firebase. Por favor, ative-o para salvar jogos.");
+                    abrirModal(
+                        "⚠️ Configuração Pendente no Firebase", 
+                        "O Login Anônimo está desativado no seu Firebase.\n\nPara o sistema salvar na nuvem, acesse o painel do Firebase > Authentication > Sign-in method e ATIVE a opção 'Anônimo'.", 
+                        `<button onclick="fecharModal()" class="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700 transition">Entendi</button>`
+                    );
+                } else {
+                    console.error("Erro na inicialização:", error);
+                    mostrarAlerta("Erro ao conectar ao banco de dados.", "erro");
+                }
+                
+                // Permite usar o app offline mesmo com erro
+                initBaseStats();
             }
         }
 
