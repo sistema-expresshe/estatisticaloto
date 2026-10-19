@@ -132,7 +132,7 @@
             </div>
         </section>
 
-        <!-- GERADOR INTELIGENTE (NOVO E AUTOMÁTICO) -->
+        <!-- GERADOR INTELIGENTE -->
         <section id="gerador" class="secao-conteudo max-w-5xl mx-auto">
             <h2 class="text-3xl font-bold text-gray-800 mb-2">Gerador Inteligente</h2>
             <p class="text-gray-500 mb-6">Deixe a inteligência artificial criar as melhores combinações para você.</p>
@@ -342,7 +342,7 @@
             }
         }
 
-        // ====== GERADOR INTELIGENTE (AUTOMÁTICO) ======
+        // ====== GERADOR INTELIGENTE ======
         function initGerador() {
             const painel = document.getElementById('volante-gerador');
             for(let i=1; i<=25; i++) {
@@ -375,7 +375,6 @@
             const estrategia = document.getElementById('estrategia-gerador').value;
             const container = document.getElementById('resultado-gerador');
             
-            // Verifica se o usuário tentou forçar o pool mas não escolheu o suficiente
             if(selecaoGerador.length > 0 && selecaoGerador.length < 15) {
                 return alert("Você marcou algumas dezenas no Pool manual. Para forçar o jogo, marque de 15 a 20 dezenas, ou clique em LIMPAR para deixar o sistema gerar tudo automaticamente.");
             }
@@ -386,32 +385,23 @@
             for(let i=0; i<qtd; i++) {
                 let aposta = [];
                 
-                // MODO 1: O usuário travou os números no Pool Manual
                 if(selecaoGerador.length >= 15) {
                     aposta = [...selecaoGerador].sort(() => 0.5 - Math.random()).slice(0, 15);
                 } 
-                // MODO 2: Geração Inteligente (Pool vazio) - O sistema trabalha sozinho!
                 else {
                     let baseDezenas = [];
-                    let qtdFriasPermitidas = 1; // Evita encher o jogo de frias
+                    let qtdFriasPermitidas = 1;
 
                     if (estrategia === 'tendencia') {
-                        // Pega 10 da tendência + 5 aleatórias do resto do volante
                         baseDezenas = [...tendenciaAtual].sort(() => 0.5 - Math.random()).slice(0, 10);
-                    } 
-                    else if (estrategia === 'historico') {
-                        // Pega 10 do histórico global + 5 aleatórias
+                    } else if (estrategia === 'historico') {
                         baseDezenas = [...historicoGlobal].sort(() => 0.5 - Math.random()).slice(0, 10);
-                    } 
-                    else { // Balanceado
-                        // Mistura 5 mais quentes, 5 tendência, e completa
+                    } else { 
                         let misto = [...new Set([...dezenasQuentes, ...dezenasTendencia])];
                         baseDezenas = misto.sort(() => 0.5 - Math.random()).slice(0, 8);
                     }
                     
                     aposta = [...baseDezenas];
-                    
-                    // Completa o jogo até dar 15 números
                     let todasAsDezenas = Array.from({length: 25}, (_, i) => i + 1);
                     let dezenasSobrando = todasAsDezenas.filter(n => !aposta.includes(n));
                     dezenasSobrando = dezenasSobrando.sort(() => 0.5 - Math.random());
@@ -429,7 +419,6 @@
                 aposta.sort((a,b)=>a-b);
                 ultimosJogosGerados.push(aposta);
                 
-                // Renderiza as bolinhas na tela
                 const box = document.createElement('div');
                 box.className = 'p-3 border rounded-lg bg-gray-50 flex flex-col md:flex-row justify-between items-center gap-3';
                 
@@ -524,30 +513,34 @@
             if(confirm("Excluir este jogo?")) { await deleteDoc(doc(db, "jogos", id)); carregarJogos(); }
         }
 
-        // ====== PDF ======
+        // ====== PDF A4 AJUSTADO ======
         window.baixarPDF = function(origem) {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
             let jogosImp = origem === 'gerador' ? ultimosJogosGerados : jogosSalvosNuvem.map(j => j.numeros);
             if(jogosImp.length === 0) return alert("Nenhum jogo para imprimir.");
 
-            doc.setFont("helvetica", "bold"); doc.setFontSize(22); doc.setTextColor(147, 51, 234);
-            doc.text(origem === 'gerador' ? "LotoExpert - Jogos Gerados" : "LotoExpert - Meus Jogos", 20, 20);
+            // Reduzimos as margens esquerdas para 15 (antes era 20)
+            doc.setFont("helvetica", "bold"); doc.setFontSize(18); doc.setTextColor(147, 51, 234);
+            doc.text(origem === 'gerador' ? "LotoExpert - Jogos Gerados" : "LotoExpert - Meus Jogos", 15, 20);
             
-            doc.setFont("helvetica", "normal"); doc.setFontSize(12); doc.setTextColor(100, 100, 100);
+            doc.setFont("helvetica", "normal"); doc.setFontSize(10); doc.setTextColor(100, 100, 100);
             const dataHoje = new Date().toLocaleDateString('pt-BR');
-            doc.text(`Data: ${dataHoje} | Quantidade: ${jogosImp.length} aposta(s)`, 20, 30);
-            doc.setLineWidth(0.5); doc.line(20, 35, 190, 35);
+            doc.text(`Data: ${dataHoje} | Quantidade: ${jogosImp.length} aposta(s)`, 15, 30);
+            doc.setLineWidth(0.5); doc.line(15, 35, 195, 35);
 
-            let y = 45; doc.setFont("courier", "bold"); doc.setFontSize(14); doc.setTextColor(30, 30, 30);
+            let y = 45; 
+            // Reduzido tamanho da fonte dos números (de 14 para 10) para caberem todos na folha
+            doc.setFont("courier", "bold"); doc.setFontSize(10); doc.setTextColor(30, 30, 30);
+            
             jogosImp.forEach((jogo, i) => {
-                doc.text(`Aposta ${String(i + 1).padStart(2, '0')}: [ ${jogo.map(n => String(n).padStart(2, '0')).join(' - ')} ]`, 20, y);
-                y += 10;
+                doc.text(`Aposta ${String(i + 1).padStart(2, '0')}: [ ${jogo.map(n => String(n).padStart(2, '0')).join(' - ')} ]`, 15, y);
+                y += 8; // Espaço menor entre as linhas, cabem muito mais jogos por folha
                 if(y > 280) { doc.addPage(); y = 20; }
             });
 
-            doc.setFont("helvetica", "italic"); doc.setFontSize(10); doc.setTextColor(150, 150, 150);
-            doc.text("Gerado pelo aplicativo LotoExpert.", 20, doc.internal.pageSize.getHeight() - 10);
+            doc.setFont("helvetica", "italic"); doc.setFontSize(9); doc.setTextColor(150, 150, 150);
+            doc.text("Gerado pelo aplicativo LotoExpert.", 15, doc.internal.pageSize.getHeight() - 10);
             doc.save(`LotoExpert_${origem}_${dataHoje.replaceAll('/','-')}.pdf`);
         }
 
