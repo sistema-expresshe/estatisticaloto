@@ -55,7 +55,7 @@
                 <i class="fa-solid fa-wand-magic-sparkles w-5"></i> Gerador Inteligente
             </button>
             <button onclick="mudarAba('meus-jogos')" class="aba-btn w-full text-left p-3 rounded-lg hover:bg-purple-700 flex items-center gap-3 font-medium transition" data-target="meus-jogos">
-                <i class="fa-solid fa-ticket w-5"></i> Meus Jogos (Nuvem)
+                <i class="fa-solid fa-ticket w-5"></i> Meus Jogos
             </button>
             <button onclick="mudarAba('analise')" class="aba-btn w-full text-left p-3 rounded-lg hover:bg-purple-700 flex items-center gap-3 font-medium transition" data-target="analise">
                 <i class="fa-solid fa-magnifying-glass-chart w-5"></i> Análise & Sugestões
@@ -85,7 +85,6 @@
                 </button>
             </div>
 
-            <!-- Premiações e Concurso API -->
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
                 <div class="bg-gradient-to-br from-purple-600 to-purple-800 rounded-xl p-6 text-white shadow-lg relative overflow-hidden">
                     <i class="fa-solid fa-clover absolute -right-6 -top-6 text-9xl opacity-20"></i>
@@ -112,7 +111,6 @@
                 </div>
             </div>
 
-            <!-- Painéis de Dezenas (Quentes, Frias, Tendência) -->
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
                 <div class="bg-white p-6 rounded-xl shadow border border-gray-100">
                     <h3 class="text-lg font-bold text-gray-800 flex items-center gap-2 mb-2"><div class="w-8 h-8 rounded bg-red-100 flex items-center justify-center text-red-500"><i class="fa-solid fa-fire"></i></div> Dezenas Quentes</h3>
@@ -138,7 +136,7 @@
             <p class="text-gray-500 mb-6">Deixe a inteligência artificial criar as melhores combinações para você.</p>
             
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-                <!-- Coluna Esquerda: Configurações do Gerador -->
+                <!-- Coluna Esquerda -->
                 <div class="md:col-span-1 space-y-6">
                     <div class="bg-white p-6 rounded-xl shadow border border-purple-200">
                         <h3 class="font-bold text-purple-800 mb-4 flex items-center gap-2"><i class="fa-solid fa-robot"></i> Inteligência do Sorteio</h3>
@@ -162,7 +160,6 @@
                         </button>
                     </div>
 
-                    <!-- Pool Manual (Secundário/Opcional) -->
                     <div class="bg-white p-6 rounded-xl shadow border border-gray-100 opacity-80 hover:opacity-100 transition">
                         <div class="flex justify-between items-start mb-2">
                             <h3 class="font-bold text-gray-700 text-sm flex items-center gap-2"><i class="fa-solid fa-bullseye"></i> Forçar Dezenas (Opcional)</h3>
@@ -174,13 +171,13 @@
                     </div>
                 </div>
 
-                <!-- Coluna Direita: Resultados Gerados -->
+                <!-- Coluna Direita -->
                 <div class="md:col-span-2">
                     <div class="bg-white p-6 rounded-xl shadow border border-gray-100 min-h-full">
                         <div class="flex justify-between items-center mb-6 pb-2 border-b">
                             <h3 class="font-bold text-gray-800 text-xl">Jogos Gerados</h3>
                             <div id="acoes-gerador" class="hidden flex gap-2">
-                                <button onclick="salvarTodosNuvem()" id="btn-salvar-todos" class="bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded font-bold transition text-sm flex items-center gap-2">
+                                <button onclick="salvarTodosGerados()" id="btn-salvar-todos" class="bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded font-bold transition text-sm flex items-center gap-2">
                                     <i class="fa-solid fa-cloud-arrow-up"></i> Salvar Todos
                                 </button>
                                 <button onclick="baixarPDF('gerador')" class="bg-gray-800 hover:bg-black text-white px-3 py-2 rounded font-bold transition text-sm flex items-center gap-2">
@@ -199,12 +196,11 @@
             </div>
         </section>
 
-        <!-- MEUS JOGOS NUVEM -->
+        <!-- MEUS JOGOS -->
         <section id="meus-jogos" class="secao-conteudo max-w-5xl mx-auto">
-            <h2 class="text-3xl font-bold text-gray-800 mb-2">Meus Jogos (Nuvem)</h2>
-            <p class="text-gray-500 mb-6">Seus jogos salvos no banco de dados, protegidos na sua conta.</p>
+            <h2 class="text-3xl font-bold text-gray-800 mb-2">Meus Jogos</h2>
+            <p class="text-gray-500 mb-6">Seus jogos salvos e protegidos na sua conta.</p>
 
-            <!-- Inserção Manual de Jogos -->
             <div class="bg-white p-6 rounded-xl shadow border border-gray-100 mb-8 border-l-4 border-l-purple-500">
                 <div class="flex items-center gap-2 mb-4">
                     <div class="w-8 h-8 rounded-full border border-purple-200 flex items-center justify-center text-purple-600"><i class="fa-solid fa-plus"></i></div>
@@ -215,42 +211,70 @@
                 
                 <div class="grid grid-cols-5 md:grid-cols-10 gap-2 mb-6" id="volante-manual"></div>
                 <button id="btn-salvar-manual" onclick="salvarJogoManual()" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 rounded-lg transition disabled:opacity-50" disabled>
-                    <i class="fa-solid fa-cloud-arrow-up mr-2"></i> Salvar Jogo no Firebase
+                    <i class="fa-solid fa-floppy-disk mr-2"></i> Salvar Jogo
                 </button>
             </div>
 
-            <!-- Lista de Jogos Salvos -->
             <div class="flex justify-between items-center mb-4 border-b pb-2">
                 <h3 class="font-bold text-gray-800 text-xl">Lista de Jogos Salvos</h3>
-                <button onclick="baixarPDF('nuvem')" class="bg-gray-800 hover:bg-black text-white px-4 py-2 rounded-lg font-bold transition shadow text-sm flex items-center gap-2">
+                <button onclick="baixarPDF('salvos')" class="bg-gray-800 hover:bg-black text-white px-4 py-2 rounded-lg font-bold transition shadow text-sm flex items-center gap-2">
                     <i class="fa-solid fa-file-pdf"></i> Imprimir Meus Jogos
                 </button>
             </div>
-            <div id="lista-jogos-nuvem" class="space-y-3">
-                <p class="text-gray-500 italic">Carregando jogos do banco de dados...</p>
+            <div id="lista-jogos-salvos" class="space-y-3">
+                <p class="text-gray-500 italic">Carregando seus jogos...</p>
             </div>
         </section>
 
         <!-- ANÁLISE E SUGESTÕES -->
         <section id="analise" class="secao-conteudo max-w-5xl mx-auto">
-            <h2 class="text-3xl font-bold text-gray-800 mb-2">Análise dos Seus Jogos</h2>
-            <p class="text-gray-500 mb-6">Avaliação matemática das suas apostas salvas.</p>
-            <div class="bg-white p-6 rounded-xl shadow border border-gray-100 mb-6" id="painel-analise">
-                <p class="text-center text-gray-500 py-8">Carregando análise...</p>
+            <h2 class="text-3xl font-bold text-gray-800 mb-2">Análise & Sugestões Anti-Repetição</h2>
+            <p class="text-gray-500 mb-6">Avaliação matemática das suas apostas salvas e cálculo de probabilidades.</p>
+
+            <!-- NOVO: Painel de Probabilidades (Chances de Ganhar) -->
+            <div id="painel-chances" class="bg-gradient-to-r from-purple-800 to-indigo-900 text-white p-6 rounded-xl shadow mb-6 hidden">
+                <!-- Conteúdo inserido via JS -->
             </div>
-            <h3 class="font-bold text-gray-800 text-xl mb-4">Sugestão de Novo Jogo</h3>
-            <p class="text-sm text-gray-500 mb-4">Um jogo gerado cruzando estatísticas, excluindo padrões já usados por você.</p>
-            <div id="sugestao-jogo" class="bg-purple-50 border border-purple-200 p-6 rounded-xl"></div>
+
+            <div class="bg-white p-6 rounded-xl shadow border border-gray-100 mb-6">
+                <h3 class="font-bold text-gray-800 text-xl mb-4 border-b pb-2">Análise de Pares e Ímpares</h3>
+                <div id="painel-analise"><p class="text-center text-gray-500 py-8">Carregando análise...</p></div>
+            </div>
+
+            <!-- RESTAURADO: Gerador Anti-Repetição com Módulos -->
+            <div class="bg-purple-50 border border-purple-200 p-6 rounded-xl mb-6 shadow">
+                <h3 class="font-bold text-purple-800 text-xl mb-2"><i class="fa-solid fa-shield-halved"></i> Gerador Anti-Repetição</h3>
+                <p class="text-sm text-gray-600 mb-6">Gere novos jogos baseados nas estatísticas. O sistema garante que <b>NENHUM</b> deles repetirá os jogos que você já tem salvos.</p>
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-1">Estratégia Matemática:</label>
+                        <select id="estrategia-anti-repeticao" class="w-full border border-purple-300 rounded p-3 focus:outline-purple-500 bg-white">
+                            <option value="tendencia">Forte em Tendência Atual</option>
+                            <option value="historico">Forte no Histórico Global</option>
+                            <option value="balanceado">Balanceado (Mistura Ideal)</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-bold text-gray-700 mb-1">Qtd. de Jogos Inéditos:</label>
+                        <input type="number" id="qtd-anti-repeticao" value="1" min="1" max="20" class="w-full border border-purple-300 rounded p-3 focus:outline-purple-500">
+                    </div>
+                </div>
+                <button onclick="gerarSugestoesIneditas()" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 rounded transition shadow-md">
+                    Gerar Jogos Inéditos
+                </button>
+                
+                <div id="resultado-sugestoes" class="mt-6 space-y-3"></div>
+            </div>
         </section>
     </main>
 
-    <!-- FIREBASE E JAVASCRIPT GERAL -->
+    <!-- FIREBASE E JAVASCRIPT -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
         import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, where, writeBatch } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
         import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
 
-        // SUA CHAVE DO FIREBASE
         const firebaseConfig = {
           apiKey: "AIzaSyAOxuFG3nuf19awqFtdMQfr91YiFnmdhBM",
           authDomain: "estatisticaloto.firebaseapp.com",
@@ -265,12 +289,10 @@
         const db = getFirestore(app);
         const auth = getAuth(app);
 
-        // VARIÁVEIS E ESTATÍSTICAS REAIS
+        // VARIÁVEIS E ESTATÍSTICAS
         const dezenasQuentes = [20, 25, 2, 4, 13];
         const dezenasFrias = [17, 18, 22, 6, 9];
         const dezenasTendencia = [21, 7, 12, 4, 15]; 
-        
-        // Arrays completos para o motor do Gerador
         const tendenciaAtual = [25, 20, 1, 11, 10, 12, 4, 15, 21, 24, 5, 7, 9, 2, 6];
         const historicoGlobal = [20, 25, 10, 11, 13, 24, 1, 4, 14, 5, 3, 12, 2, 15, 9];
         
@@ -290,7 +312,7 @@
                 loginOverlay.classList.add('hidden'); carregarJogos();
             } else {
                 usuarioAtual = null; loginOverlay.classList.remove('hidden');
-                document.getElementById('lista-jogos-nuvem').innerHTML = ''; jogosSalvosNuvem = [];
+                document.getElementById('lista-jogos-salvos').innerHTML = ''; jogosSalvosNuvem = [];
             }
         });
 
@@ -369,14 +391,13 @@
             document.getElementById('contador-gerador').innerText = '0';
         }
 
-        // Lógica principal do gerador
         window.gerarApostasInteligentes = function() {
             const qtd = Math.min(parseInt(document.getElementById('qtd-jogos').value) || 1, 50);
             const estrategia = document.getElementById('estrategia-gerador').value;
             const container = document.getElementById('resultado-gerador');
             
             if(selecaoGerador.length > 0 && selecaoGerador.length < 15) {
-                return alert("Você marcou algumas dezenas no Pool manual. Para forçar o jogo, marque de 15 a 20 dezenas, ou clique em LIMPAR para deixar o sistema gerar tudo automaticamente.");
+                return alert("Para forçar o jogo, marque de 15 a 20 dezenas, ou clique em LIMPAR para deixar o sistema gerar automaticamente.");
             }
             
             container.innerHTML = '';
@@ -392,11 +413,9 @@
                     let baseDezenas = [];
                     let qtdFriasPermitidas = 1;
 
-                    if (estrategia === 'tendencia') {
-                        baseDezenas = [...tendenciaAtual].sort(() => 0.5 - Math.random()).slice(0, 10);
-                    } else if (estrategia === 'historico') {
-                        baseDezenas = [...historicoGlobal].sort(() => 0.5 - Math.random()).slice(0, 10);
-                    } else { 
+                    if (estrategia === 'tendencia') baseDezenas = [...tendenciaAtual].sort(() => 0.5 - Math.random()).slice(0, 10);
+                    else if (estrategia === 'historico') baseDezenas = [...historicoGlobal].sort(() => 0.5 - Math.random()).slice(0, 10);
+                    else { 
                         let misto = [...new Set([...dezenasQuentes, ...dezenasTendencia])];
                         baseDezenas = misto.sort(() => 0.5 - Math.random()).slice(0, 8);
                     }
@@ -421,22 +440,19 @@
                 
                 const box = document.createElement('div');
                 box.className = 'p-3 border rounded-lg bg-gray-50 flex flex-col md:flex-row justify-between items-center gap-3';
-                
-                const bolasHtml = aposta.map(n => {
-                    return `<div class="bola w-8 h-8 text-xs cursor-default bg-white border-purple-300 text-purple-900 shadow-sm">${String(n).padStart(2,'0')}</div>`;
-                }).join('');
+                const bolasHtml = aposta.map(n => `<div class="bola w-8 h-8 text-xs cursor-default bg-white border-purple-300 text-purple-900 shadow-sm">${String(n).padStart(2,'0')}</div>`).join('');
                 
                 box.innerHTML = `
                     <div class="flex flex-wrap gap-1 justify-center">${bolasHtml}</div>
                     <button class="text-purple-600 hover:bg-purple-100 px-3 py-1 rounded text-sm font-bold transition flex items-center gap-1" onclick="salvarJogoDireto([${aposta}], this)">
-                        <i class="fa-solid fa-cloud-arrow-up"></i> Salvar
+                        <i class="fa-solid fa-floppy-disk"></i> Salvar
                     </button>`;
                 container.appendChild(box);
             }
             document.getElementById('acoes-gerador').classList.remove('hidden');
         }
 
-        window.salvarTodosNuvem = async function() {
+        window.salvarTodosGerados = async function() {
             if(!usuarioAtual || ultimosJogosGerados.length === 0) return;
             const btn = document.getElementById('btn-salvar-todos');
             btn.innerText = "Salvando..."; btn.disabled = true;
@@ -478,10 +494,10 @@
                 document.querySelectorAll('#volante-manual .bola').forEach(b => b.classList.remove('bola-selecionada'));
                 document.getElementById('contador-manual').innerText = `0`;
                 btn.disabled = true; carregarJogos();
-            } finally { btn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up mr-2"></i> Salvar Jogo no Firebase`; }
+            } finally { btn.innerHTML = `<i class="fa-solid fa-floppy-disk mr-2"></i> Salvar Jogo`; }
         }
 
-        // ====== GERENCIAR JOGOS NUVEM ======
+        // ====== GERENCIAR JOGOS ======
         window.salvarJogoDireto = async function(numeros, btnEl) {
             if(!usuarioAtual) return; btnEl.innerText = "Salvando...";
             await addDoc(collection(db, "jogos"), { userId: usuarioAtual.uid, numeros: numeros, data: new Date().toISOString() });
@@ -490,27 +506,31 @@
 
         async function carregarJogos() {
             if(!usuarioAtual) return;
-            const snapshot = await getDocs(query(collection(db, "jogos"), where("userId", "==", usuarioAtual.uid)));
-            jogosSalvosNuvem = [];
-            const container = document.getElementById('lista-jogos-nuvem'); container.innerHTML = '';
-            
-            if(snapshot.empty) { container.innerHTML = '<p class="text-gray-500">Nenhum jogo salvo na nuvem.</p>'; return; }
+            try {
+                const snapshot = await getDocs(query(collection(db, "jogos"), where("userId", "==", usuarioAtual.uid)));
+                jogosSalvosNuvem = [];
+                const container = document.getElementById('lista-jogos-salvos'); container.innerHTML = '';
+                
+                if(snapshot.empty) { container.innerHTML = '<p class="text-gray-500">Nenhum jogo salvo.</p>'; return; }
 
-            snapshot.forEach(docSnap => {
-                const j = { id: docSnap.id, ...docSnap.data() };
-                jogosSalvosNuvem.push(j);
-                const box = document.createElement('div');
-                box.className = 'p-3 border rounded-lg bg-white flex flex-col md:flex-row justify-between items-center gap-3 shadow-sm';
-                const bolasHtml = j.numeros.map(n => `<div class="bola bola-selecionada w-8 h-8 text-sm cursor-default">${String(n).padStart(2,'0')}</div>`).join('');
-                box.innerHTML = `<div class="flex flex-wrap gap-1">${bolasHtml}</div>
-                    <button class="text-red-500 hover:bg-red-50 p-2 rounded transition" onclick="deletarJogo('${j.id}')"><i class="fa-solid fa-trash"></i> Excluir</button>`;
-                container.appendChild(box);
-            });
-            if(document.getElementById('analise').classList.contains('secao-ativa')) renderizarAnalise();
+                snapshot.forEach(docSnap => {
+                    const j = { id: docSnap.id, ...docSnap.data() };
+                    jogosSalvosNuvem.push(j);
+                    const box = document.createElement('div');
+                    box.className = 'p-3 border rounded-lg bg-white flex flex-col md:flex-row justify-between items-center gap-3 shadow-sm';
+                    const bolasHtml = j.numeros.map(n => `<div class="bola bola-selecionada w-8 h-8 text-sm cursor-default">${String(n).padStart(2,'0')}</div>`).join('');
+                    box.innerHTML = `<div class="flex flex-wrap gap-1">${bolasHtml}</div>
+                        <button class="text-red-500 hover:bg-red-50 p-2 rounded transition font-bold text-sm" onclick="deletarJogo('${j.id}')"><i class="fa-solid fa-trash"></i> Excluir</button>`;
+                    container.appendChild(box);
+                });
+                if(document.getElementById('analise').classList.contains('secao-ativa')) renderizarAnalise();
+            } catch (e) {
+                alert("Erro ao carregar jogos: Verifique as regras do Firestore.");
+            }
         }
 
         window.deletarJogo = async function(id) {
-            if(confirm("Excluir este jogo?")) { await deleteDoc(doc(db, "jogos", id)); carregarJogos(); }
+            if(confirm("Excluir este jogo permanentemente?")) { await deleteDoc(doc(db, "jogos", id)); carregarJogos(); }
         }
 
         // ====== PDF A4 AJUSTADO ======
@@ -520,9 +540,8 @@
             let jogosImp = origem === 'gerador' ? ultimosJogosGerados : jogosSalvosNuvem.map(j => j.numeros);
             if(jogosImp.length === 0) return alert("Nenhum jogo para imprimir.");
 
-            // Reduzimos as margens esquerdas para 15 (antes era 20)
             doc.setFont("helvetica", "bold"); doc.setFontSize(18); doc.setTextColor(147, 51, 234);
-            doc.text(origem === 'gerador' ? "LotoExpert - Jogos Gerados" : "LotoExpert - Meus Jogos", 15, 20);
+            doc.text(origem === 'gerador' ? "LotoExpert - Jogos Gerados" : "LotoExpert - Meus Jogos Salvos", 15, 20);
             
             doc.setFont("helvetica", "normal"); doc.setFontSize(10); doc.setTextColor(100, 100, 100);
             const dataHoje = new Date().toLocaleDateString('pt-BR');
@@ -530,28 +549,60 @@
             doc.setLineWidth(0.5); doc.line(15, 35, 195, 35);
 
             let y = 45; 
-            // Reduzido tamanho da fonte dos números (de 14 para 10) para caberem todos na folha
             doc.setFont("courier", "bold"); doc.setFontSize(10); doc.setTextColor(30, 30, 30);
             
             jogosImp.forEach((jogo, i) => {
                 doc.text(`Aposta ${String(i + 1).padStart(2, '0')}: [ ${jogo.map(n => String(n).padStart(2, '0')).join(' - ')} ]`, 15, y);
-                y += 8; // Espaço menor entre as linhas, cabem muito mais jogos por folha
+                y += 8; 
                 if(y > 280) { doc.addPage(); y = 20; }
             });
 
             doc.setFont("helvetica", "italic"); doc.setFontSize(9); doc.setTextColor(150, 150, 150);
-            doc.text("Gerado pelo aplicativo LotoExpert.", 15, doc.internal.pageSize.getHeight() - 10);
+            doc.text("Boa Sorte! Gerado pelo aplicativo LotoExpert.", 15, doc.internal.pageSize.getHeight() - 10);
             doc.save(`LotoExpert_${origem}_${dataHoje.replaceAll('/','-')}.pdf`);
         }
 
-        // ====== ANÁLISE E SUGESTÕES ======
+        // ====== ANÁLISE, PROBABILIDADES E ANTI-REPETIÇÃO ======
         function renderizarAnalise() {
-            const painel = document.getElementById('painel-analise');
-            if(jogosSalvosNuvem.length === 0) {
-                painel.innerHTML = '<p class="text-center text-gray-500 py-8">Salve alguns jogos primeiro.</p>';
-                document.getElementById('sugestao-jogo').innerHTML = ''; return;
+            const painelAnalise = document.getElementById('painel-analise');
+            const painelChances = document.getElementById('painel-chances');
+            const qtdJogos = jogosSalvosNuvem.length;
+
+            if(qtdJogos === 0) {
+                painelChances.classList.add('hidden');
+                painelAnalise.innerHTML = '<p class="text-center text-gray-500 py-8">Salve alguns jogos primeiro para ver a análise.</p>';
+                document.getElementById('resultado-sugestoes').innerHTML = ''; 
+                return;
             }
 
+            // MÓDULO DE CHANCES DE GANHAR
+            painelChances.classList.remove('hidden');
+            const chance15 = Math.round(3268760 / qtdJogos).toLocaleString('pt-BR');
+            const chance14 = Math.round(21791 / qtdJogos).toLocaleString('pt-BR');
+            
+            painelChances.innerHTML = `
+                <div class="flex items-center gap-4 mb-4">
+                    <div class="w-14 h-14 bg-yellow-400 text-yellow-900 rounded-full flex items-center justify-center text-2xl shadow-lg border-2 border-yellow-200">
+                        <i class="fa-solid fa-trophy"></i>
+                    </div>
+                    <div>
+                        <h3 class="font-bold text-2xl text-yellow-400">Probabilidade de Ganhar</h3>
+                        <p class="text-sm text-purple-200">Com suas ${qtdJogos} aposta(s) única(s) salva(s), estas são suas chances matemáticas:</p>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4 text-center mt-4">
+                    <div class="bg-white/10 p-4 rounded-lg border border-white/20 shadow-inner">
+                        <p class="text-xs uppercase tracking-wider text-purple-200 mb-1">15 Acertos (Prêmio Máximo)</p>
+                        <p class="text-2xl font-bold">1 em ${chance15}</p>
+                    </div>
+                    <div class="bg-white/10 p-4 rounded-lg border border-white/20 shadow-inner">
+                        <p class="text-xs uppercase tracking-wider text-purple-200 mb-1">14 Acertos</p>
+                        <p class="text-2xl font-bold">1 em ${chance14}</p>
+                    </div>
+                </div>
+            `;
+
+            // MÓDULO DE PARES/ÍMPARES
             let html = `<div class="space-y-4">`;
             jogosSalvosNuvem.forEach((j, index) => {
                 let pares = j.numeros.filter(n => n % 2 === 0).length;
@@ -561,23 +612,58 @@
                         <div><p class="font-bold text-gray-800">Jogo ${index + 1}</p><p class="text-sm text-gray-600">${impares} Ímpares / ${pares} Pares</p></div>
                         <div class="text-right text-sm">${aviso}</div></div>`;
             });
-            painel.innerHTML = html + `</div>`;
+            painelAnalise.innerHTML = html + `</div>`;
+        }
 
-            let novaAposta = []; let tentativas = 0;
-            const jogosStr = jogosSalvosNuvem.map(j => j.numeros.join(','));
-            while(tentativas < 50) {
-                novaAposta = [...tendenciaAtual.slice(0, 8)];
-                let pool = Array.from({length: 25}, (_, i) => i + 1).filter(n => !novaAposta.includes(n) && !dezenasFrias.includes(n)).sort(() => 0.5 - Math.random());
-                while(novaAposta.length < 15) novaAposta.push(pool.pop());
-                novaAposta.sort((a,b)=>a-b);
-                if(!jogosStr.includes(novaAposta.join(','))) break;
-                tentativas++;
+        // MÓDULO GERADOR ANTI-REPETIÇÃO
+        window.gerarSugestoesIneditas = function() {
+            if(!jogosSalvosNuvem || jogosSalvosNuvem.length === 0) {
+                return alert("Você precisa ter jogos salvos para usar o sistema anti-repetição.");
             }
-
-            document.getElementById('sugestao-jogo').innerHTML = `
-                <p class="mb-3 font-bold text-purple-800">Aposta Gerada Inédita (Não repete seus jogos):</p>
-                <div class="flex flex-wrap gap-2 mb-4">${novaAposta.map(n => `<div class="bola bola-selecionada cursor-default bg-green-600 border-green-600">${String(n).padStart(2,'0')}</div>`).join('')}</div>
-                <button onclick="salvarJogoDireto([${novaAposta}], this)" class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-bold shadow transition">Salvar Sugestão</button>`;
+            
+            const qtd = parseInt(document.getElementById('qtd-anti-repeticao').value) || 1;
+            const estrategia = document.getElementById('estrategia-anti-repeticao').value;
+            const container = document.getElementById('resultado-sugestoes');
+            container.innerHTML = '';
+            
+            const jogosStr = jogosSalvosNuvem.map(j => j.numeros.join(','));
+            
+            for(let i=0; i<qtd; i++) {
+                let novaAposta = [];
+                let tentativas = 0;
+                let ehRepetido = true;
+                
+                while(ehRepetido && tentativas < 200) {
+                    let baseDezenas = [];
+                    if (estrategia === 'tendencia') baseDezenas = [...tendenciaAtual].sort(() => 0.5 - Math.random()).slice(0, 10);
+                    else if (estrategia === 'historico') baseDezenas = [...historicoGlobal].sort(() => 0.5 - Math.random()).slice(0, 10);
+                    else {
+                        let misto = [...new Set([...dezenasQuentes, ...dezenasTendencia])];
+                        baseDezenas = misto.sort(() => 0.5 - Math.random()).slice(0, 8);
+                    }
+                    
+                    novaAposta = [...baseDezenas];
+                    let poolRestante = Array.from({length: 25}, (_, i) => i + 1).filter(n => !novaAposta.includes(n) && !dezenasFrias.includes(n)).sort(() => 0.5 - Math.random());
+                    
+                    while(novaAposta.length < 15) novaAposta.push(poolRestante.pop());
+                    novaAposta.sort((a,b)=>a-b);
+                    
+                    ehRepetido = jogosStr.includes(novaAposta.join(','));
+                    tentativas++;
+                }
+                
+                const bolasHtml = novaAposta.map(n => `<div class="bola bola-selecionada cursor-default bg-green-600 border-green-600 shadow">${String(n).padStart(2,'0')}</div>`).join('');
+                
+                const box = document.createElement('div');
+                box.className = 'flex flex-col md:flex-row justify-between items-center gap-3 p-3 bg-white border border-green-200 rounded';
+                box.innerHTML = `
+                    <div class="flex flex-wrap gap-1">${bolasHtml}</div>
+                    <button onclick="salvarJogoDireto([${novaAposta}], this)" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded text-sm font-bold shadow transition flex items-center gap-2">
+                        <i class="fa-solid fa-floppy-disk"></i> Salvar Inédito
+                    </button>
+                `;
+                container.appendChild(box);
+            }
         }
 
         // INIT
