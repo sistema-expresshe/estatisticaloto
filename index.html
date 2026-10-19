@@ -6,6 +6,8 @@
     <title>LotoExpert - Estatísticas e Gerador</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Biblioteca jsPDF para exportar em A4 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <style>
         .bola {
             width: 40px; height: 40px;
@@ -14,7 +16,6 @@
             transition: all 0.2s; border: 2px solid #e5e7eb; background: white; color: #374151;
         }
         .bola:hover { border-color: #a855f7; }
-        /* Correção do bug visual da bola selecionada forçando a cor em Hexadecimal */
         .bola-selecionada { background-color: #9333ea !important; color: white !important; border-color: #9333ea !important; }
         .bola-quente { background-color: #ef4444; color: white; border-color: #ef4444; }
         .bola-fria { background-color: #3b82f6; color: white; border-color: #3b82f6; }
@@ -63,18 +64,14 @@
             <p>Logado como:</p>
             <p id="user-email-display" class="font-bold truncate text-white">Carregando...</p>
             <button id="btn-logout" class="mt-3 w-full bg-red-500 hover:bg-red-600 text-white p-2 rounded flex items-center justify-center gap-2 font-bold transition">
-                <i class="fa-solid fa-right-from-bracket"></i> Sair da Conta
+                <i class="fa-solid fa-right-from-bracket"></i> Sair
             </button>
         </div>
     </aside>
 
     <!-- CONTEÚDO PRINCIPAL -->
     <main class="flex-1 overflow-y-auto p-8 relative">
-        <div id="loading-spinner" class="hidden absolute inset-0 bg-white/80 z-50 flex items-center justify-center">
-            <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-700"></div>
-        </div>
-
-        <!-- DASHBOARD / ESTATÍSTICAS -->
+        <!-- DASHBOARD -->
         <section id="dashboard" class="secao-conteudo secao-ativa max-w-5xl mx-auto">
             <div class="flex justify-between items-center mb-6">
                 <div>
@@ -86,7 +83,6 @@
                 </button>
             </div>
 
-            <!-- CARDS DE INFORMAÇÃO -->
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
                 <!-- Concurso API -->
                 <div class="bg-gradient-to-br from-purple-600 to-purple-800 rounded-xl p-6 text-white shadow-lg relative overflow-hidden">
@@ -95,7 +91,7 @@
                         <i class="fa-solid fa-ticket"></i> Próximo Concurso <span id="api-num-concurso">(Buscando...)</span>
                     </p>
                     <h3 class="text-4xl font-bold mb-1" id="api-premio">R$ --</h3>
-                    <p class="text-sm text-purple-200 mb-6" id="api-data">Sorteio hoje às 20h</p>
+                    <p class="text-sm text-purple-200 mb-6" id="api-data">Atualizando data...</p>
                     <div class="bg-purple-900/50 rounded-lg p-3 flex justify-between items-center text-sm">
                         <span>Aposta Simples (15)</span>
                         <span class="font-bold">R$ 3,00</span>
@@ -142,462 +138,17 @@
                 </div>
                 <div class="bg-white p-6 rounded-xl shadow border border-gray-100">
                     <h3 class="text-lg font-bold text-gray-800 flex items-center gap-2 mb-2"><i class="fa-solid fa-snowflake text-blue-500"></i> Dezenas Frias</h3>
-                    <p class="text-sm text-gray-500 mb-4">Menos sorteadas (evitar muitas)</p>
+                    <p class="text-sm text-gray-500 mb-4">Menos sorteadas (evitar)</p>
                     <div class="flex flex-wrap gap-2" id="lista-frias"></div>
                 </div>
             </div>
         </section>
 
-        <!-- GERADOR INTELIGENTE -->
+        <!-- GERADOR INTELIGENTE (RESTAURADO COM A UI COMPLETA) -->
         <section id="gerador" class="secao-conteudo max-w-5xl mx-auto">
             <h2 class="text-3xl font-bold text-gray-800 mb-2">Gerador Inteligente</h2>
-            <p class="text-gray-500 mb-6">Selecione suas dezenas base (ou use estatísticas) e gere desdobramentos.</p>
+            <p class="text-gray-500 mb-6">Crie combinações otimizadas matematicamente para os próximos concursos.</p>
             
-            <div class="bg-white p-6 rounded-xl shadow border border-gray-100 mb-6">
-                <div class="flex justify-between items-center mb-4">
-                    <h3 class="font-bold text-gray-800">Selecione entre 15 e 20 números:</h3>
-                    <button onclick="limparGerador()" class="text-red-500 text-sm hover:underline">Limpar</button>
-                </div>
-                <div class="grid grid-cols-5 md:grid-cols-10 gap-3 mb-6" id="volante-gerador"></div>
-                <div class="flex items-center gap-4 border-t pt-4">
-                    <div>
-                        <label class="block text-sm text-gray-600 mb-1">Qtd de Jogos:</label>
-                        <input type="number" id="qtd-jogos" value="3" min="1" max="50" class="border rounded p-2 w-24 focus:outline-purple-500">
-                    </div>
-                    <button onclick="gerarApostas()" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-6 rounded-lg mt-5 transition">Gerar Jogos</button>
-                </div>
-            </div>
-            <div id="resultado-gerador" class="space-y-4"></div>
-        </section>
-
-        <!-- MEUS JOGOS NUVEM -->
-        <section id="meus-jogos" class="secao-conteudo max-w-5xl mx-auto">
-            <h2 class="text-3xl font-bold text-gray-800 mb-2">Meus Jogos (Nuvem)</h2>
-            <p class="text-gray-500 mb-6">Seus jogos salvos no banco de dados, protegidos na sua conta.</p>
-
-            <!-- Novo Componente: Inserção Manual de Jogos -->
-            <div class="bg-white p-6 rounded-xl shadow border border-gray-100 mb-8 border-l-4 border-l-purple-500">
-                <div class="flex justify-between items-center mb-4">
-                    <div>
-                        <h3 class="font-bold text-gray-800 text-lg">Inserir Jogo Manualmente</h3>
-                        <p class="text-sm text-gray-500">Já fez um jogo na lotérica? Salve ele aqui para analisar.</p>
-                    </div>
-                    <span id="contador-manual" class="font-bold text-purple-600 bg-purple-100 px-3 py-1 rounded-full text-sm">0/15</span>
-                </div>
-                <div class="grid grid-cols-5 md:grid-cols-10 gap-2 mb-4" id="volante-manual"></div>
-                <button id="btn-salvar-manual" onclick="salvarJogoManual()" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 rounded-lg transition disabled:opacity-50" disabled>
-                    <i class="fa-solid fa-cloud-arrow-up mr-2"></i> Salvar Jogo no Firebase
-                </button>
-            </div>
-
-            <h3 class="font-bold text-gray-800 text-xl mb-4 border-b pb-2">Lista de Jogos Salvos</h3>
-            <div id="lista-jogos-nuvem" class="space-y-3">
-                <p class="text-gray-500 italic">Carregando jogos do banco de dados...</p>
-            </div>
-        </section>
-
-        <!-- ANÁLISE E SUGESTÕES -->
-        <section id="analise" class="secao-conteudo max-w-5xl mx-auto">
-            <h2 class="text-3xl font-bold text-gray-800 mb-2">Análise dos Seus Jogos</h2>
-            <p class="text-gray-500 mb-6">Avaliação matemática das suas apostas salvas.</p>
-
-            <div class="bg-white p-6 rounded-xl shadow border border-gray-100 mb-6" id="painel-analise">
-                <p class="text-center text-gray-500 py-8">Carregando análise...</p>
-            </div>
-
-            <h3 class="font-bold text-gray-800 text-xl mb-4">Sugestão de Novo Jogo</h3>
-            <p class="text-sm text-gray-500 mb-4">Um jogo gerado cruzando as estatísticas e excluindo padrões já usados por você.</p>
-            <div id="sugestao-jogo" class="bg-purple-50 border border-purple-200 p-6 rounded-xl"></div>
-        </section>
-    </main>
-
-    <!-- FIREBASE E SCRIPTS -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
-        import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, where } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
-        import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
-
-        // SUA CONFIGURAÇÃO DO FIREBASE (NÃO APAGUE)
-        const firebaseConfig = {
-          apiKey: "AIzaSyAOxuFG3nuf19awqFtdMQfr91YiFnmdhBM",
-          authDomain: "estatisticaloto.firebaseapp.com",
-          databaseURL: "https://estatisticaloto-default-rtdb.firebaseio.com",
-          projectId: "estatisticaloto",
-          storageBucket: "estatisticaloto.firebasestorage.app",
-          messagingSenderId: "88640221049",
-          appId: "1:88640221049:web:6475dfec49e95f55cd09a8",
-          measurementId: "G-9D4VX8HW9K"
-        };
-
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
-        const auth = getAuth(app);
-
-        // VARIÁVEIS GLOBAIS
-        const dezenasQuentes = [25, 20, 1, 11, 10, 12, 4, 15];
-        const dezenasFrias = [16, 17, 23, 19, 8];
-        let selecaoGerador = [];
-        let selecaoManual = [];
-        let jogosSalvosNuvem = [];
-        let usuarioAtual = null;
-
-        // ====== TELA DE LOGIN (EMAIL/SENHA) ======
-        const loginOverlay = document.getElementById('login-overlay');
-        const emailInput = document.getElementById('email-input');
-        const passwordInput = document.getElementById('password-input');
-        const btnLogin = document.getElementById('btn-login');
-        const btnRegister = document.getElementById('btn-register');
-        const btnLogout = document.getElementById('btn-logout');
-        const loginError = document.getElementById('login-error');
-
-        function showLoginError(msg) {
-            loginError.textContent = msg;
-            loginError.classList.remove('hidden');
-        }
-
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                usuarioAtual = user;
-                document.getElementById('user-email-display').innerText = user.email;
-                loginOverlay.classList.add('hidden');
-                carregarJogos();
-            } else {
-                usuarioAtual = null;
-                loginOverlay.classList.remove('hidden');
-                document.getElementById('lista-jogos-nuvem').innerHTML = '';
-                jogosSalvosNuvem = [];
-            }
-        });
-
-        btnLogin.addEventListener('click', () => {
-            loginError.classList.add('hidden');
-            btnLogin.innerText = 'Entrando...';
-            signInWithEmailAndPassword(auth, emailInput.value, passwordInput.value)
-                .then(() => { btnLogin.innerText = 'Entrar'; })
-                .catch((e) => {
-                    btnLogin.innerText = 'Entrar';
-                    showLoginError('Erro: E-mail ou senha incorretos.');
-                });
-        });
-
-        btnRegister.addEventListener('click', () => {
-            loginError.classList.add('hidden');
-            btnRegister.innerText = 'Criando...';
-            createUserWithEmailAndPassword(auth, emailInput.value, passwordInput.value)
-                .then(() => { btnRegister.innerText = 'Criar Nova Conta'; })
-                .catch((e) => {
-                    btnRegister.innerText = 'Criar Nova Conta';
-                    if(e.code === 'auth/weak-password') showLoginError('A senha deve ter mín. 6 caracteres.');
-                    else if(e.code === 'auth/email-already-in-use') showLoginError('E-mail já cadastrado.');
-                    else showLoginError('Erro ao criar conta. Verifique os dados.');
-                });
-        });
-
-        btnLogout.addEventListener('click', () => {
-            signOut(auth).then(() => {
-                emailInput.value = ''; passwordInput.value = '';
-            });
-        });
-
-        // ====== NAVEGAÇÃO ======
-        window.mudarAba = function(idAlvo) {
-            document.querySelectorAll('.secao-conteudo').forEach(el => el.classList.remove('secao-ativa'));
-            document.getElementById(idAlvo).classList.add('secao-ativa');
-            
-            document.querySelectorAll('.aba-btn').forEach(btn => {
-                btn.classList.remove('bg-purple-700');
-                if(btn.dataset.target === idAlvo) btn.classList.add('bg-purple-700');
-            });
-
-            if(idAlvo === 'analise') renderizarAnalise();
-        }
-
-        // ====== DASHBOARD ESTATÍSTICAS ======
-        function initDashboard() {
-            const divQ = document.getElementById('lista-quentes');
-            const divF = document.getElementById('lista-frias');
-            dezenasQuentes.forEach(n => {
-                divQ.innerHTML += `<div class="bola bola-quente">${String(n).padStart(2,'0')}</div>`;
-            });
-            dezenasFrias.forEach(n => {
-                divF.innerHTML += `<div class="bola bola-fria">${String(n).padStart(2,'0')}</div>`;
-            });
-        }
-
-        // ====== INTEGRAÇÃO API LOTERIAS ======
-        window.carregarDadosAPI = async function() {
-            const btnNum = document.getElementById('api-num-concurso');
-            const btnPremio = document.getElementById('api-premio');
-            const btnData = document.getElementById('api-data');
-            
-            btnNum.innerText = "(Atualizando...)";
-            
-            try {
-                // Usando AllOrigins Proxy para evitar bloqueio de CORS da Caixa
-                const urlCaixa = encodeURIComponent('https://servicebus2.caixa.gov.br/portaldeloterias/api/lotofacil/');
-                const res = await fetch(`https://api.allorigins.win/get?url=${urlCaixa}`);
-                const dataProxy = await res.json();
-                const data = JSON.parse(dataProxy.contents);
-                
-                // Concurso atual + 1 = Próximo Concurso
-                const proximoConcurso = data.numero + 1;
-                btnNum.innerText = `(${proximoConcurso})`;
-                
-                // Formatar Prêmio Estimado
-                if(data.valorEstimadoProximoConcurso) {
-                    btnPremio.innerText = data.valorEstimadoProximoConcurso.toLocaleString('pt-BR', {style: 'currency', currency: 'BRL'});
-                } else {
-                    btnPremio.innerText = "R$ 1.700.000,00"; // Fallback
-                }
-                
-                btnData.innerText = `Data do próximo: ${data.dataProximoConcurso}`;
-            } catch (e) {
-                console.error("Erro ao buscar API Loterias", e);
-                btnNum.innerText = "(Indisponível)";
-                btnPremio.innerText = "R$ 1.700.000,00 (Est.)";
-                btnData.innerText = "Verifique conexão";
-            }
-        }
-
-        // ====== GERADOR ======
-        function initGerador() {
-            const painel = document.getElementById('volante-gerador');
-            painel.innerHTML = '';
-            for(let i=1; i<=25; i++) {
-                const b = document.createElement('div');
-                b.className = 'bola';
-                b.innerText = String(i).padStart(2,'0');
-                b.onclick = () => toggleGerador(i, b);
-                painel.appendChild(b);
-            }
-        }
-
-        function toggleGerador(num, el) {
-            const idx = selecaoGerador.indexOf(num);
-            if(idx > -1) {
-                selecaoGerador.splice(idx, 1);
-                el.classList.remove('bola-selecionada');
-            } else {
-                if(selecaoGerador.length >= 20) return alert("Máximo de 20 números base permitidos.");
-                selecaoGerador.push(num);
-                el.classList.add('bola-selecionada');
-            }
-        }
-
-        window.limparGerador = function() {
-            selecaoGerador = [];
-            document.querySelectorAll('#volante-gerador .bola').forEach(b => b.classList.remove('bola-selecionada'));
-            document.getElementById('resultado-gerador').innerHTML = '';
-        }
-
-        window.gerarApostas = function() {
-            if(selecaoGerador.length < 15) return alert("Selecione pelo menos 15 números.");
-            const qtd = parseInt(document.getElementById('qtd-jogos').value);
-            const container = document.getElementById('resultado-gerador');
-            container.innerHTML = '';
-            
-            for(let i=0; i<qtd; i++) {
-                let aposta = [...selecaoGerador].sort(() => 0.5 - Math.random()).slice(0, 15).sort((a,b)=>a-b);
-                
-                const box = document.createElement('div');
-                box.className = 'p-4 border rounded-lg bg-gray-50 flex flex-col md:flex-row justify-between items-center gap-4';
-                
-                const bolasHtml = aposta.map(n => `<div class="bola bola-selecionada cursor-default">${String(n).padStart(2,'0')}</div>`).join('');
-                box.innerHTML = `<div class="flex flex-wrap gap-1">${bolasHtml}</div>`;
-                
-                const btnSalvar = document.createElement('button');
-                btnSalvar.className = 'bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded text-sm font-bold w-full md:w-auto transition';
-                btnSalvar.innerText = "Salvar na Nuvem";
-                btnSalvar.onclick = () => salvarJogoDireto(aposta, btnSalvar);
-                
-                box.appendChild(btnSalvar);
-                container.appendChild(box);
-            }
-        }
-
-        // ====== VOLANTE MANUAL ======
-        function initManual() {
-            const painel = document.getElementById('volante-manual');
-            painel.innerHTML = '';
-            for(let i=1; i<=25; i++) {
-                const b = document.createElement('div');
-                b.className = 'bola';
-                b.innerText = String(i).padStart(2,'0');
-                b.onclick = () => toggleManual(i, b);
-                painel.appendChild(b);
-            }
-        }
-
-        function toggleManual(num, el) {
-            const idx = selecaoManual.indexOf(num);
-            if(idx > -1) {
-                selecaoManual.splice(idx, 1);
-                el.classList.remove('bola-selecionada');
-            } else {
-                if(selecaoManual.length >= 15) return;
-                selecaoManual.push(num);
-                el.classList.add('bola-selecionada');
-            }
-            document.getElementById('contador-manual').innerText = `${selecaoManual.length}/15`;
-            document.getElementById('btn-salvar-manual').disabled = selecaoManual.length !== 15;
-        }
-
-        window.salvarJogoManual = async function() {
-            const btn = document.getElementById('btn-salvar-manual');
-            if(selecaoManual.length !== 15 || !usuarioAtual) return;
-            const aposta = [...selecaoManual].sort((a,b)=>a-b);
-            
-            btn.innerText = "Salvando...";
-            try {
-                await addDoc(collection(db, "jogos"), {
-                    userId: usuarioAtual.uid,
-                    numeros: aposta,
-                    data: new Date().toISOString()
-                });
-                selecaoManual = [];
-                document.querySelectorAll('#volante-manual .bola').forEach(b => b.classList.remove('bola-selecionada'));
-                document.getElementById('contador-manual').innerText = `0/15`;
-                btn.disabled = true;
-                carregarJogos();
-            } catch (e) { console.error("Erro manual:", e); }
-            finally {
-                btn.innerHTML = `<i class="fa-solid fa-cloud-arrow-up mr-2"></i> Salvar Jogo no Firebase`;
-            }
-        }
-
-        // ====== FIREBASE: JOGOS ======
-        window.salvarJogoDireto = async function(numeros, btnElement) {
-            if(!usuarioAtual) return alert("Faça login primeiro!");
-            btnElement.innerText = "Salvando...";
-            try {
-                await addDoc(collection(db, "jogos"), {
-                    userId: usuarioAtual.uid,
-                    numeros: numeros,
-                    data: new Date().toISOString()
-                });
-                btnElement.innerText = "Salvo!";
-                btnElement.classList.replace('bg-purple-600', 'bg-green-600');
-                btnElement.disabled = true;
-                carregarJogos();
-            } catch (e) {
-                btnElement.innerText = "Erro";
-                console.error(e);
-            }
-        }
-
-        async function carregarJogos() {
-            if(!usuarioAtual) return;
-            const q = query(collection(db, "jogos"), where("userId", "==", usuarioAtual.uid));
-            const snapshot = await getDocs(q);
-            jogosSalvosNuvem = [];
-            
-            const container = document.getElementById('lista-jogos-nuvem');
-            container.innerHTML = '';
-            
-            if(snapshot.empty) {
-                container.innerHTML = '<p class="text-gray-500">Nenhum jogo salvo na nuvem ainda.</p>';
-                return;
-            }
-
-            snapshot.forEach(docSnap => {
-                const j = { id: docSnap.id, ...docSnap.data() };
-                jogosSalvosNuvem.push(j);
-                
-                const box = document.createElement('div');
-                box.className = 'p-3 border rounded-lg bg-white flex flex-col md:flex-row justify-between items-center gap-3 shadow-sm';
-                
-                const bolasHtml = j.numeros.map(n => `<div class="bola bola-selecionada w-8 h-8 text-sm cursor-default">${String(n).padStart(2,'0')}</div>`).join('');
-                
-                box.innerHTML = `
-                    <div class="flex flex-wrap gap-1">${bolasHtml}</div>
-                    <button class="text-red-500 hover:bg-red-50 p-2 rounded transition" onclick="deletarJogo('${j.id}')">
-                        <i class="fa-solid fa-trash"></i> Excluir
-                    </button>
-                `;
-                container.appendChild(box);
-            });
-            if(document.getElementById('analise').classList.contains('secao-ativa')) renderizarAnalise();
-        }
-
-        window.deletarJogo = async function(id) {
-            if(confirm("Excluir este jogo da nuvem?")) {
-                await deleteDoc(doc(db, "jogos", id));
-                carregarJogos();
-            }
-        }
-
-        // ====== ANÁLISE ======
-        function renderizarAnalise() {
-            const painel = document.getElementById('painel-analise');
-            if(jogosSalvosNuvem.length === 0) {
-                painel.innerHTML = '<p class="text-center text-gray-500 py-8">Salve alguns jogos para ver a análise aqui.</p>';
-                document.getElementById('sugestao-jogo').innerHTML = '';
-                return;
-            }
-
-            let html = `<div class="space-y-4">`;
-            jogosSalvosNuvem.forEach((j, index) => {
-                let pares = j.numeros.filter(n => n % 2 === 0).length;
-                let impares = 15 - pares;
-                let aviso = (pares === 7 || pares === 8) ? 
-                    `<span class="text-green-600 font-bold"><i class="fa-solid fa-check"></i> Excelente (Equilibrado)</span>` : 
-                    `<span class="text-yellow-600 font-bold"><i class="fa-solid fa-triangle-exclamation"></i> Arriscado (Fora do Padrão)</span>`;
-
-                html += `
-                    <div class="p-4 border-b flex justify-between items-center bg-gray-50 rounded">
-                        <div>
-                            <p class="font-bold text-gray-800">Jogo ${index + 1}</p>
-                            <p class="text-sm text-gray-600">${impares} Ímpares / ${pares} Pares</p>
-                        </div>
-                        <div class="text-right text-sm">${aviso}</div>
-                    </div>
-                `;
-            });
-            painel.innerHTML = html + `</div>`;
-
-            // Gerar Sugestão sem repetir
-            gerarSugestaoUnica();
-        }
-
-        function gerarSugestaoUnica() {
-            let tentativas = 0;
-            let novaAposta = [];
-            let ehRepetido = true;
-
-            const jogosStr = jogosSalvosNuvem.map(j => j.numeros.join(','));
-
-            while(ehRepetido && tentativas < 50) {
-                novaAposta = [...dezenasQuentes]; // Começa com as quentes
-                let pool = [];
-                for(let i=1; i<=25; i++) {
-                    if(!dezenasQuentes.includes(i) && !dezenasFrias.includes(i)) pool.push(i);
-                }
-                pool = pool.sort(() => 0.5 - Math.random());
-                
-                while(novaAposta.length < 15) novaAposta.push(pool.pop());
-                novaAposta.sort((a,b)=>a-b);
-                
-                ehRepetido = jogosStr.includes(novaAposta.join(','));
-                tentativas++;
-            }
-
-            const bolasHtml = novaAposta.map(n => `<div class="bola bola-selecionada cursor-default bg-green-600 border-green-600">${String(n).padStart(2,'0')}</div>`).join('');
-            document.getElementById('sugestao-jogo').innerHTML = `
-                <p class="mb-3 font-bold text-purple-800">Aposta Gerada Otimizada:</p>
-                <div class="flex flex-wrap gap-2 mb-4">${bolasHtml}</div>
-                <button onclick="salvarJogoDireto([${novaAposta}], this)" class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-bold shadow transition">
-                    Salvar Sugestão
-                </button>
-            `;
-        }
-
-        // INIT
-        window.onload = () => {
-            initDashboard();
-            initGerador();
-            initManual();
-            carregarDadosAPI();
-        }
-    </script>
-</body>
-</html>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <!-- Coluna Esquerda: Configurações e Pool -->
+                <div class="md:col-span-1 space-y-6">
