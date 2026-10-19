@@ -17,8 +17,9 @@
         }
         .bola:hover { border-color: #a855f7; }
         .bola-selecionada { background-color: #9333ea !important; color: white !important; border-color: #9333ea !important; }
-        .bola-quente { background-color: #ef4444; color: white; border-color: #ef4444; }
-        .bola-fria { background-color: #3b82f6; color: white; border-color: #3b82f6; }
+        .bola-quente { background-color: #ef4444 !important; color: white !important; border-color: #ef4444 !important; }
+        .bola-fria { background-color: #3b82f6 !important; color: white !important; border-color: #3b82f6 !important; }
+        .bola-tendencia { background-color: #22c55e !important; color: white !important; border-color: #22c55e !important; }
         
         .secao-conteudo { display: none; }
         .secao-ativa { display: block; animation: fadeIn 0.3s; }
@@ -130,21 +131,36 @@
                 </div>
             </div>
 
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- CARDS DE ESTATÍSTICAS (OS 3 CARDS) -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Quentes -->
                 <div class="bg-white p-6 rounded-xl shadow border border-gray-100">
-                    <h3 class="text-lg font-bold text-gray-800 flex items-center gap-2 mb-2"><i class="fa-solid fa-fire text-red-500"></i> Dezenas Quentes</h3>
+                    <h3 class="text-lg font-bold text-gray-800 flex items-center gap-2 mb-2">
+                        <div class="w-8 h-8 rounded bg-red-100 flex items-center justify-center text-red-500"><i class="fa-solid fa-fire"></i></div> Dezenas Quentes
+                    </h3>
                     <p class="text-sm text-gray-500 mb-4">Mais sorteadas recentemente</p>
                     <div class="flex flex-wrap gap-2" id="lista-quentes"></div>
                 </div>
+                <!-- Frias -->
                 <div class="bg-white p-6 rounded-xl shadow border border-gray-100">
-                    <h3 class="text-lg font-bold text-gray-800 flex items-center gap-2 mb-2"><i class="fa-solid fa-snowflake text-blue-500"></i> Dezenas Frias</h3>
+                    <h3 class="text-lg font-bold text-gray-800 flex items-center gap-2 mb-2">
+                        <div class="w-8 h-8 rounded bg-blue-100 flex items-center justify-center text-blue-500"><i class="fa-solid fa-snowflake"></i></div> Dezenas Frias
+                    </h3>
                     <p class="text-sm text-gray-500 mb-4">Menos sorteadas (evitar)</p>
                     <div class="flex flex-wrap gap-2" id="lista-frias"></div>
+                </div>
+                <!-- Tendência Alta -->
+                <div class="bg-white p-6 rounded-xl shadow border border-gray-100">
+                    <h3 class="text-lg font-bold text-gray-800 flex items-center gap-2 mb-2">
+                        <div class="w-8 h-8 rounded bg-green-100 flex items-center justify-center text-green-500"><i class="fa-solid fa-arrow-trend-up"></i></div> Em Tendência de Alta
+                    </h3>
+                    <p class="text-sm text-gray-500 mb-4">Estão ganhando força agora</p>
+                    <div class="flex flex-wrap gap-2" id="lista-tendencia"></div>
                 </div>
             </div>
         </section>
 
-        <!-- GERADOR INTELIGENTE (RESTAURADO COM A UI COMPLETA) -->
+        <!-- GERADOR INTELIGENTE -->
         <section id="gerador" class="secao-conteudo max-w-5xl mx-auto">
             <h2 class="text-3xl font-bold text-gray-800 mb-2">Gerador Inteligente</h2>
             <p class="text-gray-500 mb-6">Crie combinações otimizadas matematicamente para os próximos concursos.</p>
@@ -152,3 +168,212 @@
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                 <!-- Coluna Esquerda: Configurações e Pool -->
                 <div class="md:col-span-1 space-y-6">
+                    <!-- Configurações -->
+                    <div class="bg-white p-6 rounded-xl shadow border border-gray-100">
+                        <h3 class="font-bold text-gray-800 mb-4 flex items-center gap-2"><i class="fa-solid fa-sliders text-purple-600"></i> Configurações da Aposta</h3>
+                        
+                        <div class="mb-4">
+                            <label class="block text-sm text-gray-600 mb-1">Quantidade de Jogos (Apostas)</label>
+                            <input type="number" id="qtd-jogos" value="10" min="1" max="50" class="w-full border border-gray-300 rounded p-2 focus:outline-purple-500">
+                            <p class="text-xs text-gray-400 mt-1">Máximo de 50 por vez.</p>
+                        </div>
+                        
+                        <div class="mb-6">
+                            <label class="block text-sm text-gray-600 mb-1">Estratégia Matemática</label>
+                            <select id="estrategia-gerador" class="w-full border border-gray-300 rounded p-2 focus:outline-purple-500 bg-white">
+                                <option value="balanceado">Balanceado (Pares/Ímpares, Quentes/Frias)</option>
+                                <option value="tendencia" selected>Forte em Tendência Atual</option>
+                                <option value="historico">Forte em Histórico Global</option>
+                            </select>
+                        </div>
+
+                        <button onclick="gerarApostas()" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 rounded-lg transition shadow-md flex items-center justify-center gap-2">
+                            <i class="fa-solid fa-wand-magic-sparkles"></i> Gerar Jogos
+                        </button>
+                    </div>
+
+                    <!-- Pool Opcional -->
+                    <div class="bg-white p-6 rounded-xl shadow border border-gray-100">
+                        <div class="flex justify-between items-start mb-2">
+                            <h3 class="font-bold text-gray-800 flex items-center gap-2"><i class="fa-solid fa-bullseye text-purple-600"></i> Pool de Dezenas Base</h3>
+                            <button onclick="limparGerador()" class="text-red-500 text-xs hover:underline">Limpar</button>
+                        </div>
+                        <p class="text-xs text-gray-500 mb-4">Opcional: Selecione de 15 a 20 números. O sistema usará APENAS estes para o desdobramento.</p>
+                        
+                        <p class="text-sm text-gray-600 mb-2">Selecionadas: <span id="contador-gerador" class="font-bold text-purple-600">0</span>/20</p>
+                        <div class="grid grid-cols-5 gap-2" id="volante-gerador"></div>
+                    </div>
+                </div>
+
+                <!-- Coluna Direita: Resultados e PDF -->
+                <div class="md:col-span-2">
+                    <div class="bg-white p-6 rounded-xl shadow border border-gray-100 min-h-full">
+                        <div class="flex justify-between items-center mb-6 pb-2 border-b">
+                            <h3 class="font-bold text-gray-800 text-xl">Jogos Gerados</h3>
+                            <div id="acoes-gerador" class="hidden flex gap-2">
+                                <button onclick="salvarTodosNuvem()" id="btn-salvar-todos" class="bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded font-bold transition text-sm flex items-center gap-2">
+                                    <i class="fa-solid fa-cloud-arrow-up"></i> Salvar Todos
+                                </button>
+                                <button onclick="baixarPDF('gerador')" class="bg-gray-800 hover:bg-black text-white px-3 py-2 rounded font-bold transition text-sm flex items-center gap-2">
+                                    <i class="fa-solid fa-file-pdf"></i> PDF (A4)
+                                </button>
+                            </div>
+                        </div>
+                        <div id="resultado-gerador" class="space-y-3">
+                            <div class="text-center text-gray-400 py-10 flex flex-col items-center">
+                                <i class="fa-solid fa-wand-magic-sparkles text-4xl mb-3 opacity-20"></i>
+                                <p>Ajuste as configurações ao lado e clique em "Gerar Jogos".</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- MEUS JOGOS NUVEM -->
+        <section id="meus-jogos" class="secao-conteudo max-w-5xl mx-auto">
+            <h2 class="text-3xl font-bold text-gray-800 mb-2">Meus Jogos (Nuvem)</h2>
+            <p class="text-gray-500 mb-6">Seus jogos salvos no banco de dados, protegidos na sua conta.</p>
+
+            <div class="bg-white p-6 rounded-xl shadow border border-gray-100 mb-8 border-l-4 border-l-purple-500">
+                <div class="flex items-center gap-2 mb-4">
+                    <div class="w-8 h-8 rounded-full border border-purple-200 flex items-center justify-center text-purple-600"><i class="fa-solid fa-plus"></i></div>
+                    <h3 class="font-bold text-gray-800 text-xl">Inserir Jogo Manual</h3>
+                </div>
+                <p class="text-gray-600 mb-6">Selecione as 15 dezenas para registrar e salvar o seu jogo feito.</p>
+                
+                <p class="text-lg text-gray-800 mb-4">Dezenas Marcadas: <span id="contador-manual" class="font-bold text-purple-600 text-xl">0</span>/15</p>
+                
+                <div class="grid grid-cols-5 md:grid-cols-10 gap-2 mb-6" id="volante-manual"></div>
+                <button id="btn-salvar-manual" onclick="salvarJogoManual()" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 rounded-lg transition disabled:opacity-50" disabled>
+                    <i class="fa-solid fa-cloud-arrow-up mr-2"></i> Salvar Jogo no Firebase
+                </button>
+            </div>
+
+            <div class="flex justify-between items-center mb-4 border-b pb-2">
+                <h3 class="font-bold text-gray-800 text-xl">Lista de Jogos Salvos</h3>
+                <button onclick="baixarPDF('nuvem')" class="bg-gray-800 hover:bg-black text-white px-4 py-2 rounded-lg font-bold transition shadow text-sm flex items-center gap-2">
+                    <i class="fa-solid fa-file-pdf"></i> Imprimir Meus Jogos
+                </button>
+            </div>
+            <div id="lista-jogos-nuvem" class="space-y-3">
+                <p class="text-gray-500 italic">Carregando jogos do banco de dados...</p>
+            </div>
+        </section>
+
+        <!-- ANÁLISE E SUGESTÕES -->
+        <section id="analise" class="secao-conteudo max-w-5xl mx-auto">
+            <h2 class="text-3xl font-bold text-gray-800 mb-2">Análise dos Seus Jogos</h2>
+            <p class="text-gray-500 mb-6">Avaliação matemática das suas apostas salvas.</p>
+
+            <div class="bg-white p-6 rounded-xl shadow border border-gray-100 mb-6" id="painel-analise">
+                <p class="text-center text-gray-500 py-8">Carregando análise...</p>
+            </div>
+
+            <h3 class="font-bold text-gray-800 text-xl mb-4">Sugestão de Novo Jogo</h3>
+            <p class="text-sm text-gray-500 mb-4">Um jogo gerado cruzando estatísticas, excluindo padrões já usados por você.</p>
+            <div id="sugestao-jogo" class="bg-purple-50 border border-purple-200 p-6 rounded-xl"></div>
+        </section>
+    </main>
+
+    <!-- FIREBASE E SCRIPTS -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-app.js";
+        import { getFirestore, collection, addDoc, getDocs, deleteDoc, doc, query, where, writeBatch } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
+        import { getAuth, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
+
+        const firebaseConfig = {
+          apiKey: "AIzaSyAOxuFG3nuf19awqFtdMQfr91YiFnmdhBM",
+          authDomain: "estatisticaloto.firebaseapp.com",
+          databaseURL: "https://estatisticaloto-default-rtdb.firebaseio.com",
+          projectId: "estatisticaloto",
+          storageBucket: "estatisticaloto.firebasestorage.app",
+          messagingSenderId: "88640221049",
+          appId: "1:88640221049:web:6475dfec49e95f55cd09a8",
+          measurementId: "G-9D4VX8HW9K"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+        const auth = getAuth(app);
+
+        // ESTAÍSTICAS BASE
+        const dezenasQuentes = [20, 25, 2, 4, 13];
+        const dezenasFrias = [17, 18, 22, 6, 9];
+        const dezenasTendencia = [21, 7, 12, 4, 15]; // Em tendência de alta
+        const tendenciaAtual = [25, 20, 1, 11, 10, 12, 4, 15, 21, 24, 5, 7, 9, 2, 6];
+        const historicoGlobal = [20, 25, 10, 11, 13, 24, 1, 4, 14, 5, 3, 12, 2, 15, 9];
+        
+        let selecaoGerador = [];
+        let selecaoManual = [];
+        let jogosSalvosNuvem = [];
+        let ultimosJogosGerados = [];
+        let usuarioAtual = null;
+
+        // ====== AUTH ======
+        const loginOverlay = document.getElementById('login-overlay');
+        const loginError = document.getElementById('login-error');
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                usuarioAtual = user;
+                document.getElementById('user-email-display').innerText = user.email;
+                loginOverlay.classList.add('hidden');
+                carregarJogos();
+            } else {
+                usuarioAtual = null;
+                loginOverlay.classList.remove('hidden');
+                document.getElementById('lista-jogos-nuvem').innerHTML = '';
+                jogosSalvosNuvem = [];
+            }
+        });
+
+        document.getElementById('btn-login').addEventListener('click', () => {
+            const btn = document.getElementById('btn-login');
+            loginError.classList.add('hidden'); btn.innerText = 'Entrando...';
+            signInWithEmailAndPassword(auth, document.getElementById('email-input').value, document.getElementById('password-input').value)
+                .then(() => { btn.innerText = 'Entrar'; })
+                .catch(() => { btn.innerText = 'Entrar'; showLoginError('Erro: E-mail ou senha incorretos.'); });
+        });
+
+        document.getElementById('btn-register').addEventListener('click', () => {
+            const btn = document.getElementById('btn-register');
+            loginError.classList.add('hidden'); btn.innerText = 'Criando...';
+            createUserWithEmailAndPassword(auth, document.getElementById('email-input').value, document.getElementById('password-input').value)
+                .then(() => { btn.innerText = 'Criar Nova Conta'; })
+                .catch((e) => {
+                    btn.innerText = 'Criar Nova Conta';
+                    if(e.code === 'auth/weak-password') showLoginError('A senha deve ter mín. 6 caracteres.');
+                    else if(e.code === 'auth/email-already-in-use') showLoginError('E-mail já cadastrado.');
+                    else showLoginError('Erro ao criar conta.');
+                });
+        });
+
+        document.getElementById('btn-logout').addEventListener('click', () => {
+            signOut(auth).then(() => { document.getElementById('email-input').value = ''; document.getElementById('password-input').value = ''; });
+        });
+
+        function showLoginError(msg) {
+            loginError.textContent = msg;
+            loginError.classList.remove('hidden');
+        }
+
+        // ====== TABS ======
+        window.mudarAba = function(idAlvo) {
+            document.querySelectorAll('.secao-conteudo').forEach(el => el.classList.remove('secao-ativa'));
+            document.getElementById(idAlvo).classList.add('secao-ativa');
+            document.querySelectorAll('.aba-btn').forEach(btn => {
+                btn.classList.remove('bg-purple-700');
+                if(btn.dataset.target === idAlvo) btn.classList.add('bg-purple-700');
+            });
+            if(idAlvo === 'analise') renderizarAnalise();
+        }
+
+        // ====== DASHBOARD E API ======
+        function initDashboard() {
+            const divQ = document.getElementById('lista-quentes');
+            const divF = document.getElementById('lista-frias');
+            const divT = document.getElementById('lista-tendencia');
+            
+            dezenasQuentes.forEach(n => divQ.innerHTML += `<div class="bola bola-quente">${String(n).padStart(2,'0')}</div>`);
+            dezenasFrias.forEach(n => divF.innerHTML += `<div class="bola bola-fria">${String(n).padStart(2,'
