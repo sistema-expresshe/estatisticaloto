@@ -46,7 +46,7 @@
         </div>
     </div>
 
-    <!-- CABEÇALHO MOBILE (Só aparece em telas pequenas) -->
+    <!-- CABEÇALHO MOBILE -->
     <div class="md:hidden bg-purple-800 text-white flex justify-between items-center p-4 shadow-md z-20 w-full">
         <h1 class="text-xl font-bold flex items-center gap-2"><i class="fa-solid fa-clover text-purple-300"></i> LotoExpert</h1>
         <button id="btn-menu-mobile" class="text-white text-2xl focus:outline-none"><i class="fa-solid fa-bars"></i></button>
@@ -55,7 +55,7 @@
     <!-- OVERLAY ESCURO PARA MOBILE -->
     <div id="sidebar-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-30 hidden md:hidden"></div>
 
-    <!-- SIDEBAR (Menu Lateral adaptável) -->
+    <!-- SIDEBAR -->
     <aside id="sidebar" class="w-64 bg-purple-800 text-white flex flex-col h-full shadow-xl fixed inset-y-0 left-0 transform -translate-x-full transition-transform duration-300 ease-in-out z-40 md:relative md:translate-x-0">
         <div class="p-6 flex justify-between items-center border-b border-purple-700 md:border-none">
             <h1 class="text-2xl font-bold flex items-center gap-2"><i class="fa-solid fa-clover text-purple-300"></i> LotoExpert</h1>
@@ -100,7 +100,6 @@
             </div>
 
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 md:gap-6 mb-8">
-                <!-- Concurso API -->
                 <div class="bg-gradient-to-br from-purple-600 to-purple-800 rounded-xl p-6 text-white shadow-lg relative overflow-hidden">
                     <i class="fa-solid fa-clover absolute -right-6 -top-6 text-9xl opacity-20"></i>
                     <p class="text-purple-200 text-xs md:text-sm font-semibold mb-1 uppercase tracking-wider flex items-center gap-2">
@@ -114,7 +113,6 @@
                     </div>
                 </div>
 
-                <!-- Tabela de Premiação -->
                 <div class="lg:col-span-2 bg-white rounded-xl shadow border border-gray-100 p-4 md:p-6">
                     <p class="text-gray-500 font-bold text-sm mb-4 uppercase flex items-center gap-2"><i class="fa-solid fa-award text-yellow-500"></i> Premiações por Acertos</p>
                     <div class="grid grid-cols-5 gap-1 md:gap-2 text-center overflow-x-auto pb-2">
@@ -128,7 +126,6 @@
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-6">
-                <!-- Painéis de Dezenas -->
                 <div class="bg-white p-4 md:p-6 rounded-xl shadow border border-gray-100">
                     <h3 class="text-base md:text-lg font-bold text-gray-800 flex items-center gap-2 mb-1 md:mb-2"><div class="w-8 h-8 rounded bg-red-100 flex items-center justify-center text-red-500"><i class="fa-solid fa-fire text-sm"></i></div> Dezenas Quentes</h3>
                     <p class="text-xs md:text-sm text-gray-500 mb-4">Mais sorteadas recentemente</p>
@@ -159,6 +156,18 @@
                         <h3 class="font-bold text-purple-800 mb-4 flex items-center gap-2"><i class="fa-solid fa-robot"></i> Inteligência</h3>
                         
                         <div class="mb-4">
+                            <label class="block text-xs md:text-sm font-bold text-gray-700 mb-1">Dezenas por Aposta:</label>
+                            <select id="tamanho-aposta-gerador" class="w-full border border-gray-300 rounded-lg p-2 md:p-3 bg-gray-50 focus:outline-purple-500 text-sm md:text-base cursor-pointer">
+                                <option value="15" selected>15 Dezenas</option>
+                                <option value="16">16 Dezenas</option>
+                                <option value="17">17 Dezenas</option>
+                                <option value="18">18 Dezenas</option>
+                                <option value="19">19 Dezenas</option>
+                                <option value="20">20 Dezenas</option>
+                            </select>
+                        </div>
+
+                        <div class="mb-4">
                             <label class="block text-xs md:text-sm font-bold text-gray-700 mb-1">Selecione o Módulo:</label>
                             <select id="estrategia-gerador" class="w-full border border-gray-300 rounded-lg p-2 md:p-3 bg-gray-50 focus:outline-purple-500 text-sm md:text-base cursor-pointer">
                                 <option value="tendencia">Módulo 1: Forte em Tendência</option>
@@ -182,9 +191,8 @@
                             <h3 class="font-bold text-gray-700 text-sm md:text-base flex items-center gap-2"><i class="fa-solid fa-bullseye"></i> Forçar Dezenas</h3>
                             <button onclick="limparGerador()" class="text-red-500 text-xs hover:underline">Limpar</button>
                         </div>
-                        <p class="text-xs text-gray-500 mb-3 hidden md:block">Marque de 15 a 20 abaixo. Senão, deixe vazio para o modo inteligente.</p>
+                        <p class="text-xs text-gray-500 mb-3 hidden md:block">Marque os números que deseja fixar nas apostas, ou deixe vazio para 100% automático.</p>
                         <p class="text-xs font-bold mb-2">Selecionadas: <span id="contador-gerador" class="text-purple-600">0</span>/20</p>
-                        <!-- Ajuste do grid gap para mobile -->
                         <div class="grid grid-cols-5 gap-1 sm:gap-2" id="volante-gerador"></div>
                     </div>
                 </div>
@@ -224,8 +232,8 @@
                     <div class="w-6 h-6 md:w-8 md:h-8 rounded-full border border-purple-200 flex items-center justify-center text-purple-600 text-sm md:text-base"><i class="fa-solid fa-plus"></i></div>
                     <h3 class="font-bold text-gray-800 text-lg md:text-xl">Inserir Jogo Manual</h3>
                 </div>
-                <p class="text-xs md:text-sm text-gray-600 mb-4 md:mb-6">Selecione as 15 dezenas para registrar o seu jogo.</p>
-                <p class="text-base md:text-lg text-gray-800 mb-3 md:mb-4">Dezenas Marcadas: <span id="contador-manual" class="font-bold text-purple-600">0</span>/15</p>
+                <p class="text-xs md:text-sm text-gray-600 mb-4 md:mb-6">Selecione de 15 a 20 dezenas para registrar o seu jogo.</p>
+                <p class="text-base md:text-lg text-gray-800 mb-3 md:mb-4">Dezenas Marcadas: <span id="contador-manual" class="font-bold text-purple-600">0</span>/20</p>
                 
                 <div class="grid grid-cols-5 md:grid-cols-10 gap-1 md:gap-2 mb-6" id="volante-manual"></div>
                 <button id="btn-salvar-manual" onclick="salvarJogoManual()" class="w-full bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 rounded-lg transition disabled:opacity-50 flex items-center justify-center" disabled>
@@ -264,13 +272,24 @@
                 <h3 class="font-bold text-purple-800 text-lg md:text-xl mb-2 flex items-center gap-2"><i class="fa-solid fa-shield-halved"></i> Gerador Anti-Repetição</h3>
                 <p class="text-xs md:text-sm text-gray-600 mb-4 md:mb-6">O sistema garante que <b>NENHUM</b> jogo gerado aqui repetirá os jogos que você já tem salvos.</p>
                 
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
+                    <div>
+                        <label class="block text-xs md:text-sm font-bold text-gray-700 mb-1">Dezenas / Aposta:</label>
+                        <select id="tamanho-aposta-anti" class="w-full border border-purple-300 rounded p-2 md:p-3 focus:outline-purple-500 bg-white text-sm">
+                            <option value="15" selected>15 Dezenas</option>
+                            <option value="16">16 Dezenas</option>
+                            <option value="17">17 Dezenas</option>
+                            <option value="18">18 Dezenas</option>
+                            <option value="19">19 Dezenas</option>
+                            <option value="20">20 Dezenas</option>
+                        </select>
+                    </div>
                     <div>
                         <label class="block text-xs md:text-sm font-bold text-gray-700 mb-1">Estratégia:</label>
                         <select id="estrategia-anti-repeticao" class="w-full border border-purple-300 rounded p-2 md:p-3 focus:outline-purple-500 bg-white text-sm">
-                            <option value="tendencia">Forte em Tendência Atual</option>
-                            <option value="historico">Forte no Histórico Global</option>
-                            <option value="balanceado">Balanceado (Mistura Ideal)</option>
+                            <option value="tendencia">Tendência Atual</option>
+                            <option value="historico">Histórico Global</option>
+                            <option value="balanceado">Balanceado Ideal</option>
                         </select>
                     </div>
                     <div>
@@ -428,10 +447,11 @@
         window.gerarApostasInteligentes = function() {
             const qtd = Math.min(parseInt(document.getElementById('qtd-jogos').value) || 1, 50);
             const estrategia = document.getElementById('estrategia-gerador').value;
+            const tamanhoAposta = parseInt(document.getElementById('tamanho-aposta-gerador').value) || 15;
             const container = document.getElementById('resultado-gerador');
             
-            if(selecaoGerador.length > 0 && selecaoGerador.length < 15) {
-                return alert("Para forçar o jogo, marque de 15 a 20 dezenas, ou clique em LIMPAR para deixar o sistema gerar automaticamente.");
+            if(selecaoGerador.length > 0 && selecaoGerador.length < tamanhoAposta) {
+                return alert(`Para forçar o jogo com ${tamanhoAposta} dezenas, marque no mínimo ${tamanhoAposta} números no Pool, ou clique em LIMPAR para gerar de forma 100% automática.`);
             }
             
             container.innerHTML = '';
@@ -440,8 +460,8 @@
             for(let i=0; i<qtd; i++) {
                 let aposta = [];
                 
-                if(selecaoGerador.length >= 15) {
-                    aposta = [...selecaoGerador].sort(() => 0.5 - Math.random()).slice(0, 15);
+                if(selecaoGerador.length >= tamanhoAposta) {
+                    aposta = [...selecaoGerador].sort(() => 0.5 - Math.random()).slice(0, tamanhoAposta);
                 } 
                 else {
                     let baseDezenas = [];
@@ -460,7 +480,7 @@
                     dezenasSobrando = dezenasSobrando.sort(() => 0.5 - Math.random());
                     
                     for(let num of dezenasSobrando) {
-                        if(aposta.length >= 15) break;
+                        if(aposta.length >= tamanhoAposta) break;
                         if(dezenasFrias.includes(num)) {
                             if(qtdFriasPermitidas > 0) { aposta.push(num); qtdFriasPermitidas--; }
                         } else {
@@ -510,9 +530,9 @@
                 b.onclick = () => {
                     const idx = selecaoManual.indexOf(i);
                     if(idx > -1) { selecaoManual.splice(idx, 1); b.classList.remove('bola-selecionada'); }
-                    else if(selecaoManual.length < 15) { selecaoManual.push(i); b.classList.add('bola-selecionada'); }
+                    else if(selecaoManual.length < 20) { selecaoManual.push(i); b.classList.add('bola-selecionada'); } // Aumentado para 20
                     document.getElementById('contador-manual').innerText = selecaoManual.length;
-                    document.getElementById('btn-salvar-manual').disabled = selecaoManual.length !== 15;
+                    document.getElementById('btn-salvar-manual').disabled = selecaoManual.length < 15 || selecaoManual.length > 20;
                 };
                 painel.appendChild(b);
             }
@@ -520,7 +540,7 @@
 
         window.salvarJogoManual = async function() {
             const btn = document.getElementById('btn-salvar-manual');
-            if(selecaoManual.length !== 15 || !usuarioAtual) return;
+            if(selecaoManual.length < 15 || selecaoManual.length > 20 || !usuarioAtual) return;
             btn.innerText = "Salvando...";
             try {
                 await addDoc(collection(db, "jogos"), { userId: usuarioAtual.uid, numeros: [...selecaoManual].sort((a,b)=>a-b), data: new Date().toISOString() });
@@ -583,7 +603,7 @@
             doc.setLineWidth(0.5); doc.line(15, 35, 195, 35);
 
             let y = 45; 
-            doc.setFont("courier", "bold"); doc.setFontSize(10); doc.setTextColor(30, 30, 30);
+            doc.setFont("courier", "bold"); doc.setFontSize(9); doc.setTextColor(30, 30, 30); // Fonte 9 acomoda bem até 20 dezenas
             
             jogosImp.forEach((jogo, i) => {
                 doc.text(`Aposta ${String(i + 1).padStart(2, '0')}: [ ${jogo.map(n => String(n).padStart(2, '0')).join(' - ')} ]`, 15, y);
@@ -596,23 +616,38 @@
             doc.save(`LotoExpert_${origem}_${dataHoje.replaceAll('/','-')}.pdf`);
         }
 
+        // Função Matemática de Combinações para Probabilidades Realistas
+        function getQtdCombinacoes(qtdDezenas) {
+            if(qtdDezenas === 15) return 1;
+            if(qtdDezenas === 16) return 16;
+            if(qtdDezenas === 17) return 136;
+            if(qtdDezenas === 18) return 816;
+            if(qtdDezenas === 19) return 3876;
+            if(qtdDezenas === 20) return 15504;
+            return 1;
+        }
+
         // ====== ANÁLISE, PROBABILIDADES E ANTI-REPETIÇÃO ======
         function renderizarAnalise() {
             const painelAnalise = document.getElementById('painel-analise');
             const painelChances = document.getElementById('painel-chances');
-            const qtdJogos = jogosSalvosNuvem.length;
-
-            if(qtdJogos === 0) {
+            
+            if(!jogosSalvosNuvem || jogosSalvosNuvem.length === 0) {
                 painelChances.classList.add('hidden');
                 painelAnalise.innerHTML = '<p class="text-center text-gray-500 py-8 text-sm">Salve alguns jogos primeiro para ver a análise.</p>';
                 document.getElementById('resultado-sugestoes').innerHTML = ''; 
                 return;
             }
 
-            // MÓDULO DE CHANCES DE GANHAR
+            // MÓDULO DE CHANCES DE GANHAR (Calculando o peso real dos jogos de 16, 17... 20 dezenas)
+            let totalApostasMatematicas = 0;
+            jogosSalvosNuvem.forEach(j => {
+                totalApostasMatematicas += getQtdCombinacoes(j.numeros.length);
+            });
+
             painelChances.classList.remove('hidden');
-            const chance15 = Math.round(3268760 / qtdJogos).toLocaleString('pt-BR');
-            const chance14 = Math.round(21791 / qtdJogos).toLocaleString('pt-BR');
+            const chance15 = Math.round(3268760 / totalApostasMatematicas).toLocaleString('pt-BR');
+            const chance14 = Math.round(21791 / totalApostasMatematicas).toLocaleString('pt-BR');
             
             painelChances.innerHTML = `
                 <div class="flex items-center gap-3 md:gap-4 mb-4">
@@ -621,7 +656,7 @@
                     </div>
                     <div>
                         <h3 class="font-bold text-lg md:text-2xl text-yellow-400">Probabilidade de Ganhar</h3>
-                        <p class="text-xs md:text-sm text-purple-200">Com suas ${qtdJogos} aposta(s) única(s) salva(s), estas são suas chances matemáticas:</p>
+                        <p class="text-xs md:text-sm text-purple-200">Seus jogos salvos equivalem a <b>${totalApostasMatematicas.toLocaleString('pt-BR')} aposta(s) simples</b>. Estas são suas chances reais:</p>
                     </div>
                 </div>
                 <div class="grid grid-cols-2 gap-3 text-center mt-4">
@@ -640,10 +675,15 @@
             let html = `<div class="space-y-4">`;
             jogosSalvosNuvem.forEach((j, index) => {
                 let pares = j.numeros.filter(n => n % 2 === 0).length;
-                let impares = 15 - pares;
-                let aviso = (pares >= 6 && pares <= 9) ? `<span class="text-green-600 font-bold"><i class="fa-solid fa-check"></i> Equilibrado</span>` : `<span class="text-yellow-600 font-bold"><i class="fa-solid fa-triangle-exclamation"></i> Arriscado</span>`;
+                let impares = j.numeros.length - pares; // Ajustado para suportar arrays maiores que 15
+                let meta = j.numeros.length / 2; // Para verificar o equilibrio
+                
+                let aviso = (pares >= (meta - 2) && pares <= (meta + 2)) 
+                    ? `<span class="text-green-600 font-bold"><i class="fa-solid fa-check"></i> Equilibrado</span>` 
+                    : `<span class="text-yellow-600 font-bold"><i class="fa-solid fa-triangle-exclamation"></i> Arriscado</span>`;
+                
                 html += `<div class="p-3 md:p-4 border-b flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 bg-gray-50 rounded">
-                        <div><p class="font-bold text-gray-800 text-sm md:text-base">Jogo ${index + 1}</p><p class="text-xs md:text-sm text-gray-600">${impares} Ímpares / ${pares} Pares</p></div>
+                        <div><p class="font-bold text-gray-800 text-sm md:text-base">Jogo ${index + 1} (${j.numeros.length} Dezenas)</p><p class="text-xs md:text-sm text-gray-600">${impares} Ímpares / ${pares} Pares</p></div>
                         <div class="text-xs md:text-sm self-end sm:self-center">${aviso}</div></div>`;
             });
             painelAnalise.innerHTML = html + `</div>`;
@@ -657,6 +697,7 @@
             
             const qtd = parseInt(document.getElementById('qtd-anti-repeticao').value) || 1;
             const estrategia = document.getElementById('estrategia-anti-repeticao').value;
+            const tamanhoAposta = parseInt(document.getElementById('tamanho-aposta-anti').value) || 15;
             const container = document.getElementById('resultado-sugestoes');
             container.innerHTML = '';
             
@@ -679,7 +720,7 @@
                     novaAposta = [...baseDezenas];
                     let poolRestante = Array.from({length: 25}, (_, i) => i + 1).filter(n => !novaAposta.includes(n) && !dezenasFrias.includes(n)).sort(() => 0.5 - Math.random());
                     
-                    while(novaAposta.length < 15) novaAposta.push(poolRestante.pop());
+                    while(novaAposta.length < tamanhoAposta) novaAposta.push(poolRestante.pop());
                     novaAposta.sort((a,b)=>a-b);
                     
                     ehRepetido = jogosStr.includes(novaAposta.join(','));
