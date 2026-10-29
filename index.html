@@ -257,13 +257,14 @@
             <h2 class="text-2xl md:text-3xl font-bold text-gray-800 mb-2">Análise & Sugestões</h2>
             <p class="text-sm md:text-base text-gray-500 mb-6">Avaliação matemática e cálculo de probabilidades.</p>
 
-            <!-- Painel de Probabilidades -->
+            <!-- Painel de Probabilidades (Geral) -->
             <div id="painel-chances" class="bg-gradient-to-r from-purple-800 to-indigo-900 text-white p-4 md:p-6 rounded-xl shadow mb-6 hidden">
                 <!-- Conteúdo inserido via JS -->
             </div>
 
+            <!-- Painel de Análise (Listagem com Chances Individuais) -->
             <div class="bg-white p-4 md:p-6 rounded-xl shadow border border-gray-100 mb-6">
-                <h3 class="font-bold text-gray-800 text-lg md:text-xl mb-4 border-b pb-2">Análise de Pares e Ímpares</h3>
+                <h3 class="font-bold text-gray-800 text-lg md:text-xl mb-4 border-b pb-2">Análise Detalhada dos Jogos</h3>
                 <div id="painel-analise"><p class="text-center text-gray-500 py-8 text-sm">Carregando análise...</p></div>
             </div>
 
@@ -603,7 +604,7 @@
             doc.setLineWidth(0.5); doc.line(15, 35, 195, 35);
 
             let y = 45; 
-            doc.setFont("courier", "bold"); doc.setFontSize(9); doc.setTextColor(30, 30, 30); // Fonte 9 acomoda bem até 20 dezenas
+            doc.setFont("courier", "bold"); doc.setFontSize(9); doc.setTextColor(30, 30, 30); 
             
             jogosImp.forEach((jogo, i) => {
                 doc.text(`Aposta ${String(i + 1).padStart(2, '0')}: [ ${jogo.map(n => String(n).padStart(2, '0')).join(' - ')} ]`, 15, y);
@@ -616,7 +617,7 @@
             doc.save(`LotoExpert_${origem}_${dataHoje.replaceAll('/','-')}.pdf`);
         }
 
-        // Função Matemática de Combinações para Probabilidades Realistas
+        // Função Matemática de Combinações
         function getQtdCombinacoes(qtdDezenas) {
             if(qtdDezenas === 15) return 1;
             if(qtdDezenas === 16) return 16;
@@ -639,15 +640,15 @@
                 return;
             }
 
-            // MÓDULO DE CHANCES DE GANHAR (Calculando o peso real dos jogos de 16, 17... 20 dezenas)
+            // MÓDULO DE CHANCES DE GANHAR (GERAL)
             let totalApostasMatematicas = 0;
             jogosSalvosNuvem.forEach(j => {
                 totalApostasMatematicas += getQtdCombinacoes(j.numeros.length);
             });
 
             painelChances.classList.remove('hidden');
-            const chance15 = Math.round(3268760 / totalApostasMatematicas).toLocaleString('pt-BR');
-            const chance14 = Math.round(21791 / totalApostasMatematicas).toLocaleString('pt-BR');
+            const chance15 = Math.max(1, Math.round(3268760 / totalApostasMatematicas)).toLocaleString('pt-BR');
+            const chance14 = Math.max(1, Math.round(21791 / totalApostasMatematicas)).toLocaleString('pt-BR');
             
             painelChances.innerHTML = `
                 <div class="flex items-center gap-3 md:gap-4 mb-4">
@@ -656,7 +657,7 @@
                     </div>
                     <div>
                         <h3 class="font-bold text-lg md:text-2xl text-yellow-400">Probabilidade de Ganhar</h3>
-                        <p class="text-xs md:text-sm text-purple-200">Seus jogos salvos equivalem a <b>${totalApostasMatematicas.toLocaleString('pt-BR')} aposta(s) simples</b>. Estas são suas chances reais:</p>
+                        <p class="text-xs md:text-sm text-purple-200">Seus jogos salvos equivalem a <b>${totalApostasMatematicas.toLocaleString('pt-BR')} aposta(s) simples</b>. Estas são suas chances reais combinadas:</p>
                     </div>
                 </div>
                 <div class="grid grid-cols-2 gap-3 text-center mt-4">
@@ -671,20 +672,32 @@
                 </div>
             `;
 
-            // MÓDULO DE PARES/ÍMPARES
+            // MÓDULO DE LISTAGEM COM CHANCES INDIVIDUAIS
             let html = `<div class="space-y-4">`;
             jogosSalvosNuvem.forEach((j, index) => {
                 let pares = j.numeros.filter(n => n % 2 === 0).length;
-                let impares = j.numeros.length - pares; // Ajustado para suportar arrays maiores que 15
-                let meta = j.numeros.length / 2; // Para verificar o equilibrio
+                let impares = j.numeros.length - pares;
+                let meta = j.numeros.length / 2; 
                 
                 let aviso = (pares >= (meta - 2) && pares <= (meta + 2)) 
                     ? `<span class="text-green-600 font-bold"><i class="fa-solid fa-check"></i> Equilibrado</span>` 
                     : `<span class="text-yellow-600 font-bold"><i class="fa-solid fa-triangle-exclamation"></i> Arriscado</span>`;
                 
-                html += `<div class="p-3 md:p-4 border-b flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 bg-gray-50 rounded">
-                        <div><p class="font-bold text-gray-800 text-sm md:text-base">Jogo ${index + 1} (${j.numeros.length} Dezenas)</p><p class="text-xs md:text-sm text-gray-600">${impares} Ímpares / ${pares} Pares</p></div>
-                        <div class="text-xs md:text-sm self-end sm:self-center">${aviso}</div></div>`;
+                // Calculando as chances individuais deste jogo em específico
+                let combosInd = getQtdCombinacoes(j.numeros.length);
+                let chance15Ind = Math.max(1, Math.round(3268760 / combosInd)).toLocaleString('pt-BR');
+                let chance14Ind = Math.max(1, Math.round(21791 / combosInd)).toLocaleString('pt-BR');
+
+                html += `<div class="p-3 md:p-4 border border-gray-100 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 bg-white rounded-lg shadow-sm hover:shadow transition-shadow">
+                        <div class="w-full">
+                            <p class="font-bold text-gray-800 text-sm md:text-base">Jogo ${index + 1} <span class="font-normal text-gray-500 text-xs ml-1">(${j.numeros.length} Dezenas - ${combosInd} apostas)</span></p>
+                            <p class="text-xs md:text-sm text-gray-600 mb-2">${impares} Ímpares / ${pares} Pares</p>
+                            <p class="text-xs font-semibold text-purple-700 bg-purple-50 inline-block px-2 py-1 rounded w-full sm:w-auto text-center sm:text-left">
+                                Chances neste jogo: 15 acertos (1 em ${chance15Ind}) | 14 acertos (1 em ${chance14Ind})
+                            </p>
+                        </div>
+                        <div class="text-xs md:text-sm self-end sm:self-center mt-2 sm:mt-0 whitespace-nowrap">${aviso}</div>
+                    </div>`;
             });
             painelAnalise.innerHTML = html + `</div>`;
         }
