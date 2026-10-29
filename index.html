@@ -268,10 +268,10 @@
                 <div id="painel-analise"><p class="text-center text-gray-500 py-8 text-sm">Carregando análise...</p></div>
             </div>
 
-            <!-- Gerador Anti-Repetição -->
+            <!-- Gerador Anti-Repetição e Cobertura -->
             <div class="bg-purple-50 border border-purple-200 p-4 md:p-6 rounded-xl mb-6 shadow">
-                <h3 class="font-bold text-purple-800 text-lg md:text-xl mb-2 flex items-center gap-2"><i class="fa-solid fa-shield-halved"></i> Gerador Anti-Repetição</h3>
-                <p class="text-xs md:text-sm text-gray-600 mb-4 md:mb-6">O sistema garante que <b>NENHUM</b> jogo gerado aqui repetirá os jogos que você já tem salvos.</p>
+                <h3 class="font-bold text-purple-800 text-lg md:text-xl mb-2 flex items-center gap-2"><i class="fa-solid fa-shield-halved"></i> Gerador Inteligente e Complementar</h3>
+                <p class="text-xs md:text-sm text-gray-600 mb-4 md:mb-6">O sistema garante que <b>NENHUM</b> jogo gerado repetirá os jogos que você já salvou. Escolha "Cobrir Minhas Falhas" para o sistema focar nas dezenas que você menos jogou.</p>
                 
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-4">
                     <div>
@@ -288,6 +288,7 @@
                     <div>
                         <label class="block text-xs md:text-sm font-bold text-gray-700 mb-1">Estratégia:</label>
                         <select id="estrategia-anti-repeticao" class="w-full border border-purple-300 rounded p-2 md:p-3 focus:outline-purple-500 bg-white text-sm">
+                            <option value="cobertura" class="font-bold text-purple-700">Cobrir Minhas Falhas (Complementar)</option>
                             <option value="tendencia">Tendência Atual</option>
                             <option value="historico">Histórico Global</option>
                             <option value="balanceado">Balanceado Ideal</option>
@@ -531,7 +532,7 @@
                 b.onclick = () => {
                     const idx = selecaoManual.indexOf(i);
                     if(idx > -1) { selecaoManual.splice(idx, 1); b.classList.remove('bola-selecionada'); }
-                    else if(selecaoManual.length < 20) { selecaoManual.push(i); b.classList.add('bola-selecionada'); } // Aumentado para 20
+                    else if(selecaoManual.length < 20) { selecaoManual.push(i); b.classList.add('bola-selecionada'); }
                     document.getElementById('contador-manual').innerText = selecaoManual.length;
                     document.getElementById('btn-salvar-manual').disabled = selecaoManual.length < 15 || selecaoManual.length > 20;
                 };
@@ -588,7 +589,7 @@
             if(confirm("Excluir este jogo permanentemente?")) { await deleteDoc(doc(db, "jogos", id)); carregarJogos(); }
         }
 
-        // ====== PDF A4 AJUSTADO ======
+        // ====== PDF A4 ======
         window.baixarPDF = function(origem) {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
@@ -640,7 +641,6 @@
                 return;
             }
 
-            // MÓDULO DE CHANCES DE GANHAR (GERAL)
             let totalApostasMatematicas = 0;
             jogosSalvosNuvem.forEach(j => {
                 totalApostasMatematicas += getQtdCombinacoes(j.numeros.length);
@@ -672,7 +672,6 @@
                 </div>
             `;
 
-            // MÓDULO DE LISTAGEM COM CHANCES INDIVIDUAIS
             let html = `<div class="space-y-4">`;
             jogosSalvosNuvem.forEach((j, index) => {
                 let pares = j.numeros.filter(n => n % 2 === 0).length;
@@ -683,7 +682,6 @@
                     ? `<span class="text-green-600 font-bold"><i class="fa-solid fa-check"></i> Equilibrado</span>` 
                     : `<span class="text-yellow-600 font-bold"><i class="fa-solid fa-triangle-exclamation"></i> Arriscado</span>`;
                 
-                // Calculando as chances individuais deste jogo em específico
                 let combosInd = getQtdCombinacoes(j.numeros.length);
                 let chance15Ind = Math.max(1, Math.round(3268760 / combosInd)).toLocaleString('pt-BR');
                 let chance14Ind = Math.max(1, Math.round(21791 / combosInd)).toLocaleString('pt-BR');
@@ -702,7 +700,7 @@
             painelAnalise.innerHTML = html + `</div>`;
         }
 
-        // MÓDULO GERADOR ANTI-REPETIÇÃO
+        // MÓDULO GERADOR ANTI-REPETIÇÃO E COBERTURA DE FALHAS
         window.gerarSugestoesIneditas = function() {
             if(!jogosSalvosNuvem || jogosSalvosNuvem.length === 0) {
                 return alert("Você precisa ter jogos salvos para usar o sistema anti-repetição.");
@@ -723,7 +721,24 @@
                 
                 while(ehRepetido && tentativas < 200) {
                     let baseDezenas = [];
-                    if (estrategia === 'tendencia') baseDezenas = [...tendenciaAtual].sort(() => 0.5 - Math.random()).slice(0, 10);
+                    
+                    // NOVA ESTRATÉGIA: Cobertura de Falhas Pessoais
+                    if (estrategia === 'cobertura') {
+                        let freqUsuario = {};
+                        for(let k=1; k<=25; k++) freqUsuario[k] = 0;
+                        
+                        // Conta quantas vezes cada dezena apareceu nos jogos do usuário
+                        jogosSalvosNuvem.forEach(j => {
+                            j.numeros.forEach(num => freqUsuario[num]++);
+                        });
+                        
+                        // Ordena as dezenas da menos jogada para a mais jogada
+                        let dezenasFaltantes = Object.keys(freqUsuario).map(Number).sort((a,b) => freqUsuario[a] - freqUsuario[b]);
+                        
+                        // Pega as 10 dezenas que o usuário MENOS jogou para forçar a cobertura
+                        baseDezenas = dezenasFaltantes.slice(0, 10);
+                    }
+                    else if (estrategia === 'tendencia') baseDezenas = [...tendenciaAtual].sort(() => 0.5 - Math.random()).slice(0, 10);
                     else if (estrategia === 'historico') baseDezenas = [...historicoGlobal].sort(() => 0.5 - Math.random()).slice(0, 10);
                     else {
                         let misto = [...new Set([...dezenasQuentes, ...dezenasTendencia])];
@@ -731,7 +746,7 @@
                     }
                     
                     novaAposta = [...baseDezenas];
-                    let poolRestante = Array.from({length: 25}, (_, i) => i + 1).filter(n => !novaAposta.includes(n) && !dezenasFrias.includes(n)).sort(() => 0.5 - Math.random());
+                    let poolRestante = Array.from({length: 25}, (_, i) => i + 1).filter(n => !novaAposta.includes(n)).sort(() => 0.5 - Math.random());
                     
                     while(novaAposta.length < tamanhoAposta) novaAposta.push(poolRestante.pop());
                     novaAposta.sort((a,b)=>a-b);
