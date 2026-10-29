@@ -589,7 +589,7 @@
             if(confirm("Excluir este jogo permanentemente?")) { await deleteDoc(doc(db, "jogos", id)); carregarJogos(); }
         }
 
-        // ====== PDF A4 ======
+        // ====== PDF COM QUEBRA AUTOMÁTICA ======
         window.baixarPDF = function(origem) {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
@@ -608,8 +608,16 @@
             doc.setFont("courier", "bold"); doc.setFontSize(9); doc.setTextColor(30, 30, 30); 
             
             jogosImp.forEach((jogo, i) => {
-                doc.text(`Aposta ${String(i + 1).padStart(2, '0')}: [ ${jogo.map(n => String(n).padStart(2, '0')).join(' - ')} ]`, 15, y);
-                y += 8; 
+                let texto = `Aposta ${String(i + 1).padStart(2, '0')}: [ ${jogo.map(n => String(n).padStart(2, '0')).join(' - ')} ]`;
+                
+                // O splitTextToSize quebra o texto automaticamente caso ele passe de 180mm de largura
+                let linhasTexto = doc.splitTextToSize(texto, 180); 
+                
+                doc.text(linhasTexto, 15, y);
+                
+                // Aumenta o espaço do Y dependendo se o texto gerou 1, 2 ou mais linhas
+                y += (linhasTexto.length * 5) + 3; 
+                
                 if(y > 280) { doc.addPage(); y = 20; }
             });
 
@@ -722,20 +730,15 @@
                 while(ehRepetido && tentativas < 200) {
                     let baseDezenas = [];
                     
-                    // NOVA ESTRATÉGIA: Cobertura de Falhas Pessoais
                     if (estrategia === 'cobertura') {
                         let freqUsuario = {};
                         for(let k=1; k<=25; k++) freqUsuario[k] = 0;
                         
-                        // Conta quantas vezes cada dezena apareceu nos jogos do usuário
                         jogosSalvosNuvem.forEach(j => {
                             j.numeros.forEach(num => freqUsuario[num]++);
                         });
                         
-                        // Ordena as dezenas da menos jogada para a mais jogada
                         let dezenasFaltantes = Object.keys(freqUsuario).map(Number).sort((a,b) => freqUsuario[a] - freqUsuario[b]);
-                        
-                        // Pega as 10 dezenas que o usuário MENOS jogou para forçar a cobertura
                         baseDezenas = dezenasFaltantes.slice(0, 10);
                     }
                     else if (estrategia === 'tendencia') baseDezenas = [...tendenciaAtual].sort(() => 0.5 - Math.random()).slice(0, 10);
